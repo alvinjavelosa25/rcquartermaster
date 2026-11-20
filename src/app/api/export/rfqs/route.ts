@@ -20,7 +20,8 @@ export async function GET(request: Request) {
   const and: Where[] = []
   const status = sp.get('status')
   if (status) {
-    if (!(RFQ_STATUSES as readonly string[]).includes(status)) return json({ error: 'Invalid status' }, 400)
+    if (!(RFQ_STATUSES as readonly string[]).includes(status))
+      return json({ error: 'Invalid status' }, 400)
     and.push({ status: { equals: status } })
   }
   const from = sp.get('from')
@@ -43,9 +44,23 @@ export async function GET(request: Request) {
   }
 
   const headers = [
-    'reference', 'status', 'submitted_at', 'buyer_name', 'organisation', 'facility', 'role', 'email', 'phone',
-    'needed_by', 'solicitation_number', 'delivery_details', 'special_instructions', 'general_description',
-    'items', 'sales_email_status', 'buyer_email_status',
+    'reference',
+    'status',
+    'submitted_at',
+    'buyer_name',
+    'organisation',
+    'facility',
+    'role',
+    'email',
+    'phone',
+    'needed_by',
+    'solicitation_number',
+    'delivery_details',
+    'special_instructions',
+    'general_description',
+    'items',
+    'sales_email_status',
+    'buyer_email_status',
   ]
   const lines: string[][] = [headers]
   let page = 1
@@ -64,10 +79,28 @@ export async function GET(request: Request) {
       if (count++ >= MAX_ROWS) break
       lines.push(
         [
-          r.reference, r.status, r.createdAt, r.buyerName, r.organisation, r.facility, r.buyerRole, r.email, r.phone,
-          r.neededBy?.slice(0, 10), r.solicitationNumber, r.deliveryDetails, r.specialInstructions, r.generalDescription,
-          (r.items ?? []).map((i) => `${i.sku || 'free text'} x ${i.quantity}${i.unitOfMeasure ? ` ${i.unitOfMeasure}` : ''} (${i.name})`).join(' | '),
-          r.notifications?.salesEmailStatus, r.notifications?.buyerEmailStatus,
+          r.reference,
+          r.status,
+          r.createdAt,
+          r.buyerName,
+          r.organisation,
+          r.facility,
+          r.buyerRole,
+          r.email,
+          r.phone,
+          r.neededBy?.slice(0, 10),
+          r.solicitationNumber,
+          r.deliveryDetails,
+          r.specialInstructions,
+          r.generalDescription,
+          (r.items ?? [])
+            .map(
+              (i) =>
+                `${i.sku || 'free text'} x ${i.quantity}${i.unitOfMeasure ? ` ${i.unitOfMeasure}` : ''} (${i.name})`,
+            )
+            .join(' | '),
+          r.notifications?.salesEmailStatus,
+          r.notifications?.buyerEmailStatus,
         ].map(sanitizeCsvCell),
       )
     }

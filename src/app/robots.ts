@@ -11,7 +11,7 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: '*',
       // Images and published spec sheets are served from /api; keep them crawlable, block everything else there.
       allow: ['/', '/api/media/', '/api/documents/'],
-      disallow: ['/admin', '/api/', '/search', '/rfq/thank-you'],
+      disallow: ['/admin', '/api/', '/search', '/preview', '/rfq/thank-you'],
     },
     sitemap: `${siteUrl()}/sitemap.xml`,
   }

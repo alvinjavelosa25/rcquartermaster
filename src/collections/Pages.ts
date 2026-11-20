@@ -12,7 +12,8 @@ export const Pages: CollectionConfig = {
     useAsTitle: 'title',
     defaultColumns: ['title', 'slug', '_status', 'updatedAt'],
     group: 'Content',
-    description: 'About, Services, Privacy policy and Accessibility statement. Do not change slugs.',
+    description:
+      'About, Services, Privacy policy and Accessibility statement. Do not change slugs.',
   },
   access: {
     read: publishedOrStaff,
@@ -45,7 +46,12 @@ export const Pages: CollectionConfig = {
       index: true,
       admin: { position: 'sidebar', description: 'about, services, privacy, accessibility' },
     },
-    { name: 'intro', type: 'textarea', maxLength: 400, admin: { description: 'Short introduction shown under the heading.' } },
+    {
+      name: 'intro',
+      type: 'textarea',
+      maxLength: 400,
+      admin: { description: 'Short introduction shown under the heading.' },
+    },
     { name: 'content', type: 'richText', required: true },
     {
       type: 'collapsible',

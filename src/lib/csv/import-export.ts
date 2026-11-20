@@ -52,12 +52,17 @@ const emptyReport = (dryRun: boolean): ImportReport => ({
 
 function errorMessage(error: unknown): string {
   const data = (error as { data?: { errors?: { message?: string; path?: string }[] } }).data
-  if (data?.errors?.length) return data.errors.map((e) => (e.path ? `${e.path}: ${e.message}` : e.message)).join('; ')
+  if (data?.errors?.length)
+    return data.errors.map((e) => (e.path ? `${e.path}: ${e.message}` : e.message)).join('; ')
   return (error as Error).message ?? String(error)
 }
 
 /** Import products from CSV text. Upserts by SKU. Rows are independent: one bad row does not stop the others. */
-export async function importProductsCsv(payload: Payload, text: string, opts: ImportOptions): Promise<ImportReport> {
+export async function importProductsCsv(
+  payload: Payload,
+  text: string,
+  opts: ImportOptions,
+): Promise<ImportReport> {
   const report = emptyReport(opts.dryRun)
   let parsed
   try {
@@ -75,10 +80,37 @@ export async function importProductsCsv(payload: Payload, text: string, opts: Im
 
   // Preload lookups once.
   const [categories, attrDefs, media, documents] = await Promise.all([
-    payload.find({ collection: COLLECTIONS.categories, limit: 5000, pagination: false, depth: 0, overrideAccess: true, draft: false }),
-    payload.find({ collection: COLLECTIONS.attributes, limit: 500, pagination: false, depth: 0, overrideAccess: true }),
-    payload.find({ collection: COLLECTIONS.media, limit: 20000, pagination: false, depth: 0, overrideAccess: true, select: { filename: true } }),
-    payload.find({ collection: COLLECTIONS.documents, limit: 20000, pagination: false, depth: 0, overrideAccess: true, select: { title: true } }),
+    payload.find({
+      collection: COLLECTIONS.categories,
+      limit: 5000,
+      pagination: false,
+      depth: 0,
+      overrideAccess: true,
+      draft: false,
+    }),
+    payload.find({
+      collection: COLLECTIONS.attributes,
+      limit: 500,
+      pagination: false,
+      depth: 0,
+      overrideAccess: true,
+    }),
+    payload.find({
+      collection: COLLECTIONS.media,
+      limit: 20000,
+      pagination: false,
+      depth: 0,
+      overrideAccess: true,
+      select: { filename: true },
+    }),
+    payload.find({
+      collection: COLLECTIONS.documents,
+      limit: 20000,
+      pagination: false,
+      depth: 0,
+      overrideAccess: true,
+      select: { title: true },
+    }),
   ])
   const categoryByPath = new Map(categories.docs.map((c) => [c.path, c.id]))
   const defByKey = new Map(attrDefs.docs.map((d) => [d.key, d]))
@@ -109,7 +141,8 @@ export async function importProductsCsv(payload: Payload, text: string, opts: Im
 
     const categoryId = row.category_path ? categoryByPath.get(row.category_path) : undefined
     if (row.category_path && !categoryId) problems.push(`unknown category "${row.category_path}"`)
-    if (row.status === 'published' && opts.publish && !categoryId) problems.push('a category is required to publish')
+    if (row.status === 'published' && opts.publish && !categoryId)
+      problems.push('a category is required to publish')
 
     const extraCategoryIds: number[] = []
     for (const p of splitList(row.additional_category_paths)) {
@@ -182,7 +215,11 @@ export async function importProductsCsv(payload: Payload, text: string, opts: Im
     if (imageIds.length) data.images = imageIds.map((image) => ({ image }))
     // Only rewrite the rich-text description when the plain text actually changed (keeps formatting on round trips).
     if (!current || lexicalToText(current.description).trim() !== row.description) {
-      data.description = row.description ? buildLexical(row.description.split(/\n{2,}/).map((text) => ({ type: 'p' as const, text }))) : null
+      data.description = row.description
+        ? buildLexical(
+            row.description.split(/\n{2,}/).map((text) => ({ type: 'p' as const, text })),
+          )
+        : null
     }
     if (!current) data.slug = slugify(`${row.name} ${row.sku}`)
 
@@ -223,8 +260,21 @@ export async function importProductsCsv(payload: Payload, text: string, opts: Im
 /** Export every product (any status) as CSV text, UTF-8 with BOM, formula-safe. */
 export async function exportProductsCsv(payload: Payload): Promise<string> {
   const [attrDefs, categories] = await Promise.all([
-    payload.find({ collection: COLLECTIONS.attributes, limit: 500, pagination: false, depth: 0, overrideAccess: true, sort: 'sortOrder' }),
-    payload.find({ collection: COLLECTIONS.categories, limit: 5000, pagination: false, depth: 0, overrideAccess: true }),
+    payload.find({
+      collection: COLLECTIONS.attributes,
+      limit: 500,
+      pagination: false,
+      depth: 0,
+      overrideAccess: true,
+      sort: 'sortOrder',
+    }),
+    payload.find({
+      collection: COLLECTIONS.categories,
+      limit: 5000,
+      pagination: false,
+      depth: 0,
+      overrideAccess: true,
+    }),
   ])
   const pathById = new Map(categories.docs.map((c) => [c.id, c.path]))
   const attrColumns = attrDefs.docs.map((d) => `${ATTR_PREFIX}${d.key}`)
@@ -248,7 +298,8 @@ export async function exportProductsCsv(payload: Payload): Promise<string> {
         const def = typeof a.attribute === 'object' ? a.attribute : null
         if (def) attrs.set(`${ATTR_PREFIX}${def.key}`, a.value)
       }
-      const cat = (v: unknown) => pathById.get(typeof v === 'object' && v ? (v as { id: number }).id : (v as number)) ?? ''
+      const cat = (v: unknown) =>
+        pathById.get(typeof v === 'object' && v ? (v as { id: number }).id : (v as number)) ?? ''
       const values: Record<string, string> = {
         sku: p.sku,
         name: p.name,
@@ -256,7 +307,9 @@ export async function exportProductsCsv(payload: Payload): Promise<string> {
         summary: p.summary ?? '',
         description: lexicalToText(p.description),
         category_path: cat(p.category),
-        additional_category_paths: joinList((p.additionalCategories ?? []).map(cat).filter(Boolean)),
+        additional_category_paths: joinList(
+          (p.additionalCategories ?? []).map(cat).filter(Boolean),
+        ),
         manufacturer: p.manufacturer ?? '',
         manufacturer_part_number: p.manufacturerPartNumber ?? '',
         unit_of_measure: p.unitOfMeasure ?? '',
@@ -264,13 +317,19 @@ export async function exportProductsCsv(payload: Payload): Promise<string> {
         country_of_origin: p.countryOfOrigin ?? '',
         specifications: formatSpecifications(p.specifications ?? []),
         image_filenames: joinList(
-          (p.images ?? []).map((i) => (typeof i.image === 'object' ? (i.image.filename ?? '') : '')).filter(Boolean),
+          (p.images ?? [])
+            .map((i) => (typeof i.image === 'object' ? (i.image.filename ?? '') : ''))
+            .filter(Boolean),
         ),
         document_titles: joinList(
           (p.documents ?? []).map((d) => (typeof d === 'object' ? d.title : '')).filter(Boolean),
         ),
       }
-      lines.push(headers.map((h) => sanitizeCsvCell(h.startsWith(ATTR_PREFIX) ? (attrs.get(h) ?? '') : (values[h] ?? ''))))
+      lines.push(
+        headers.map((h) =>
+          sanitizeCsvCell(h.startsWith(ATTR_PREFIX) ? (attrs.get(h) ?? '') : (values[h] ?? '')),
+        ),
+      )
     }
     if (!res.hasNextPage) break
     page += 1

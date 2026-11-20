@@ -16,7 +16,10 @@ export default async function RfqPage({ searchParams }: Props) {
   const { alt } = await searchParams
   const env = getEnv()
   const settings = await getPublicSettings()
-  const prefill = alt && /^[A-Za-z0-9._-]{1,64}$/.test(alt) ? `Please suggest an alternative to SKU ${alt}.` : undefined
+  const prefill =
+    alt && /^[A-Za-z0-9._-]{1,64}$/.test(alt)
+      ? `Please suggest an alternative to SKU ${alt}.`
+      : undefined
 
   return (
     <>
@@ -28,7 +31,11 @@ export default async function RfqPage({ searchParams }: Props) {
       <div className="mt-8 max-w-3xl">
         <RfqForm
           turnstileSiteKey={env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? ''}
-          limits={{ maxFiles: env.RFQ_MAX_FILES, maxFileMb: env.RFQ_MAX_FILE_MB, maxTotalMb: env.RFQ_MAX_TOTAL_MB }}
+          limits={{
+            maxFiles: env.RFQ_MAX_FILES,
+            maxFileMb: env.RFQ_MAX_FILE_MB,
+            maxTotalMb: env.RFQ_MAX_TOTAL_MB,
+          }}
           contact={{ phone: settings.phone, email: settings.email }}
           prefillDescription={prefill}
         />

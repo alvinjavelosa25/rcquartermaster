@@ -4,7 +4,11 @@ import { adminOnly, catalogueStaff, everyone } from '@/access'
 export const Media: CollectionConfig = {
   slug: 'media',
   labels: { singular: 'Image', plural: 'Images' },
-  admin: { group: 'Catalogue', useAsTitle: 'filename', description: 'Product, category and page images.' },
+  admin: {
+    group: 'Catalogue',
+    useAsTitle: 'filename',
+    description: 'Product, category and page images.',
+  },
   access: {
     read: everyone,
     create: catalogueStaff,
@@ -24,7 +28,9 @@ export const Media: CollectionConfig = {
       name: 'alt',
       type: 'text',
       required: true,
-      admin: { description: 'Describe the image for people who cannot see it. Required for accessibility.' },
+      admin: {
+        description: 'Describe the image for people who cannot see it. Required for accessibility.',
+      },
     },
   ],
 }

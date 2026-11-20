@@ -11,7 +11,10 @@ export const viewport: Viewport = { width: 'device-width', initialScale: 1 }
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
-  title: { default: 'RC Quartermaster LLC | Facility supplies and request for quote', template: '%s | RC Quartermaster' },
+  title: {
+    default: 'RC Quartermaster LLC | Facility supplies and request for quote',
+    template: '%s | RC Quartermaster',
+  },
   description:
     'Facility supplies, equipment and services for VA medical centres, federal facilities and healthcare systems. Browse approved products and request a quote.',
   openGraph: { type: 'website', siteName: 'RC Quartermaster LLC', locale: 'en_US' },
@@ -26,9 +29,18 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
     url: siteUrl(),
     description: s.tagline,
     ...(s.phone || s.email
-      ? { contactPoint: { '@type': 'ContactPoint', contactType: 'sales', ...(s.phone ? { telephone: s.phone } : {}), ...(s.email ? { email: s.email } : {}) } }
+      ? {
+          contactPoint: {
+            '@type': 'ContactPoint',
+            contactType: 'sales',
+            ...(s.phone ? { telephone: s.phone } : {}),
+            ...(s.email ? { email: s.email } : {}),
+          },
+        }
       : {}),
-    ...(s.addressLines.length ? { address: { '@type': 'PostalAddress', streetAddress: s.addressLines.join(', ') } } : {}),
+    ...(s.addressLines.length
+      ? { address: { '@type': 'PostalAddress', streetAddress: s.addressLines.join(', ') } }
+      : {}),
   }
   return (
     <html lang="en">
@@ -45,7 +57,10 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
         </main>
         <SiteFooter />
         <JsonLd data={organization} />
-        <Analytics plausibleDomain={process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN} ga4Id={process.env.NEXT_PUBLIC_GA4_ID} />
+        <Analytics
+          plausibleDomain={process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN}
+          ga4Id={process.env.NEXT_PUBLIC_GA4_ID}
+        />
       </body>
     </html>
   )

@@ -54,7 +54,10 @@ export interface SpecRow {
 }
 
 /** "Label: value | Other: value" -> rows. Entries without a colon are rejected by the caller. */
-export function parseSpecifications(value: string | undefined): { rows: SpecRow[]; invalid: string[] } {
+export function parseSpecifications(value: string | undefined): {
+  rows: SpecRow[]
+  invalid: string[]
+} {
   const rows: SpecRow[] = []
   const invalid: string[] = []
   for (const part of splitList(value)) {
@@ -67,8 +70,9 @@ export function parseSpecifications(value: string | undefined): { rows: SpecRow[
   return { rows, invalid }
 }
 
-export const formatSpecifications = (rows: { label: string; value: string; unit?: string | null }[]): string =>
-  joinList(rows.map((r) => `${r.label}: ${r.value}${r.unit ? ` ${r.unit}` : ''}`))
+export const formatSpecifications = (
+  rows: { label: string; value: string; unit?: string | null }[],
+): string => joinList(rows.map((r) => `${r.label}: ${r.value}${r.unit ? ` ${r.unit}` : ''}`))
 
 export const productRowSchema = z.object({
   sku: z
@@ -79,7 +83,12 @@ export const productRowSchema = z.object({
     .transform(normalizeSku),
   name: z.string().trim().min(1, 'Name is required').max(300),
   status: z.preprocess(
-    (v) => (typeof v === 'string' && v.trim() === '' ? undefined : typeof v === 'string' ? v.trim().toLowerCase() : v),
+    (v) =>
+      typeof v === 'string' && v.trim() === ''
+        ? undefined
+        : typeof v === 'string'
+          ? v.trim().toLowerCase()
+          : v,
     z.enum(['draft', 'published']).default('draft'),
   ),
   summary: z.string().trim().max(300, 'Summary must be 300 characters or fewer').default(''),
@@ -90,7 +99,12 @@ export const productRowSchema = z.object({
   manufacturer_part_number: z.string().trim().max(200).default(''),
   unit_of_measure: z.string().trim().max(16).default(''),
   availability: z.preprocess(
-    (v) => (typeof v === 'string' && v.trim() === '' ? undefined : typeof v === 'string' ? v.trim().toLowerCase() : v),
+    (v) =>
+      typeof v === 'string' && v.trim() === ''
+        ? undefined
+        : typeof v === 'string'
+          ? v.trim().toLowerCase()
+          : v,
     z.enum(AVAILABILITY).default('available'),
   ),
   country_of_origin: z.string().trim().max(100).default(''),
@@ -124,20 +138,33 @@ export function parseCsvText(text: string): ParsedCsv {
   }
   const first = records[0]
   // `columns` consumed the header; recover it from the first record, or from the text when the file has no rows.
-  const headers = first ? Object.keys(first) : text.replace(/^\uFEFF/, '').split(/\r?\n/)[0]?.split(',').map((h) => h.trim().toLowerCase()) ?? []
+  const headers = first
+    ? Object.keys(first)
+    : (text
+        .replace(/^\uFEFF/, '')
+        .split(/\r?\n/)[0]
+        ?.split(',')
+        .map((h) => h.trim().toLowerCase()) ?? [])
   for (const required of ['sku', 'name']) {
-    if (!headers.includes(required)) throw new CsvFormatError(`Missing required column "${required}".`)
+    if (!headers.includes(required))
+      throw new CsvFormatError(`Missing required column "${required}".`)
   }
   if (records.length > MAX_IMPORT_ROWS) {
-    throw new CsvFormatError(`The file has more than ${MAX_IMPORT_ROWS} rows. Split it into smaller files.`)
+    throw new CsvFormatError(
+      `The file has more than ${MAX_IMPORT_ROWS} rows. Split it into smaller files.`,
+    )
   }
-  const unknown = headers.filter((h) => !(BASE_COLUMNS as readonly string[]).includes(h) && !h.startsWith(ATTR_PREFIX))
+  const unknown = headers.filter(
+    (h) => !(BASE_COLUMNS as readonly string[]).includes(h) && !h.startsWith(ATTR_PREFIX),
+  )
   if (unknown.length) throw new CsvFormatError(`Unknown column(s): ${unknown.join(', ')}.`)
   return { headers, rows: records }
 }
 
 /** Validate one raw row. Returns the typed row or a list of messages. */
-export function validateRow(raw: Record<string, string>): { ok: true; row: ProductRow } | { ok: false; errors: string[] } {
+export function validateRow(
+  raw: Record<string, string>,
+): { ok: true; row: ProductRow } | { ok: false; errors: string[] } {
   const clean: Record<string, string> = {}
   const attributes: Record<string, string> = {}
   for (const [key, value] of Object.entries(raw)) {
@@ -150,11 +177,19 @@ export function validateRow(raw: Record<string, string>): { ok: true; row: Produ
   }
   const parsed = productRowSchema.safeParse(clean)
   if (!parsed.success) {
-    return { ok: false, errors: parsed.error.issues.map((i) => `${i.path.join('.') || 'row'}: ${i.message}`) }
+    return {
+      ok: false,
+      errors: parsed.error.issues.map((i) => `${i.path.join('.') || 'row'}: ${i.message}`),
+    }
   }
   const specs = parseSpecifications(parsed.data.specifications)
   if (specs.invalid.length) {
-    return { ok: false, errors: [`specifications: use "Label: value" pairs separated by "|" (problem with: ${specs.invalid.join('; ')})`] }
+    return {
+      ok: false,
+      errors: [
+        `specifications: use "Label: value" pairs separated by "|" (problem with: ${specs.invalid.join('; ')})`,
+      ],
+    }
   }
   return { ok: true, row: { ...parsed.data, attributes } }
 }

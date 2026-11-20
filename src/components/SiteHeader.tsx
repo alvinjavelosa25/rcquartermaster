@@ -19,7 +19,13 @@ export async function SiteHeader() {
           {settings.companyName}
         </Link>
         <div className="flex flex-wrap items-center gap-3">
-          <form action="/search" method="get" role="search" className="flex items-center gap-2">
+          <form
+            action="/search"
+            method="get"
+            role="search"
+            aria-label="Site search"
+            className="flex items-center gap-2"
+          >
             <label htmlFor="site-search" className="sr-only">
               Search products by keyword or SKU
             </label>
@@ -32,7 +38,10 @@ export async function SiteHeader() {
               maxLength={200}
               className={`${inputClass} w-56 sm:w-72`}
             />
-            <button type="submit" className="target rounded-md bg-white px-4 py-2 font-semibold text-brand-900 hover:bg-brand-100">
+            <button
+              type="submit"
+              className="target rounded-md bg-white px-4 py-2 font-semibold text-brand-900 hover:bg-brand-100"
+            >
               Search
             </button>
           </form>
@@ -42,7 +51,10 @@ export async function SiteHeader() {
           <ul className="flex flex-wrap gap-x-6 gap-y-1">
             {nav.map((item) => (
               <li key={item.href}>
-                <Link href={item.href} className="target inline-flex items-center font-semibold text-white hover:text-white">
+                <Link
+                  href={item.href}
+                  className="target inline-flex items-center font-semibold text-white hover:text-white"
+                >
                   {item.label}
                 </Link>
               </li>

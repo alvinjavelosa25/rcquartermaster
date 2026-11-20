@@ -23,7 +23,11 @@ export function lexicalToText(state: unknown): string {
     }
   }
   walk(root)
-  return parts.join(' ').replace(/[ \t]+/g, ' ').replace(/\s*\n\s*/g, '\n').trim()
+  return parts
+    .join(' ')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\s*\n\s*/g, '\n')
+    .trim()
 }
 
 const textNode = (text: string): LexicalNode => ({
@@ -36,7 +40,11 @@ const textNode = (text: string): LexicalNode => ({
   style: '',
 })
 
-const block = (type: string, children: LexicalNode[], extra: Record<string, unknown> = {}): LexicalNode => ({
+const block = (
+  type: string,
+  children: LexicalNode[],
+  extra: Record<string, unknown> = {},
+): LexicalNode => ({
   type,
   version: 1,
   children,
@@ -54,7 +62,8 @@ export type SimpleBlock =
 /** Build a valid Lexical state from simple blocks (used by seed data and tests). */
 export function buildLexical(blocks: SimpleBlock[]): LexicalState {
   const children = blocks.map((b): LexicalNode => {
-    if (b.type === 'p') return block('paragraph', [textNode(b.text)], { textFormat: 0, textStyle: '' })
+    if (b.type === 'p')
+      return block('paragraph', [textNode(b.text)], { textFormat: 0, textStyle: '' })
     if (b.type === 'ul') {
       return block(
         'list',

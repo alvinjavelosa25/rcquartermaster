@@ -21,7 +21,12 @@ export async function GET(request: Request, ctx: { params: Promise<{ id: string 
   const numericId = Number(id)
   if (!Number.isInteger(numericId)) return json({ error: 'Not found' }, 404)
   const att = await payload
-    .findByID({ collection: COLLECTIONS.rfqAttachments, id: numericId, depth: 0, overrideAccess: true })
+    .findByID({
+      collection: COLLECTIONS.rfqAttachments,
+      id: numericId,
+      depth: 0,
+      overrideAccess: true,
+    })
     .catch(() => null)
   if (!att) return json({ error: 'Not found' }, 404)
 
@@ -34,5 +39,7 @@ export async function GET(request: Request, ctx: { params: Promise<{ id: string 
     expiresInSeconds: 300,
   })
   console.info('[rfq] attachment download', { attachment: att.id, by: user.id })
-  return NextResponse.redirect(new URL(url, request.url), { headers: { 'Cache-Control': 'no-store' } })
+  return NextResponse.redirect(new URL(url, request.url), {
+    headers: { 'Cache-Control': 'no-store' },
+  })
 }

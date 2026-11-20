@@ -15,7 +15,8 @@ export const dynamic = 'force-dynamic'
 /** Issues a short-lived presigned PUT URL into the quarantine area of the private bucket. */
 export async function POST(request: Request) {
   if (!isSameOrigin(request.headers, siteUrl())) return json({ error: 'Forbidden' }, 403)
-  if (Number(request.headers.get('content-length') ?? 0) > 5_000) return json({ error: 'Invalid request.' }, 413)
+  if (Number(request.headers.get('content-length') ?? 0) > 5_000)
+    return json({ error: 'Invalid request.' }, 413)
 
   const env = getEnv()
   const payload = await getPayloadClient()
@@ -38,7 +39,8 @@ export async function POST(request: Request) {
     return json({ error: 'Invalid request.' }, 400)
   }
   const parsed = uploadRequestSchema.safeParse(raw)
-  if (!parsed.success) return json({ error: 'Invalid request.', fields: fieldErrors(parsed.error) }, 400)
+  if (!parsed.success)
+    return json({ error: 'Invalid request.', fields: fieldErrors(parsed.error) }, 400)
 
   const check = validateDeclaredFile(parsed.data, getAttachmentLimits())
   if (!check.ok) return json({ error: check.error }, 400)

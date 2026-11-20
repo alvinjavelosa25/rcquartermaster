@@ -84,9 +84,22 @@ export class PostgresSearchService implements SearchService {
     return sql.join(parts, sql` AND `)
   }
 
+  /**
+   * Exact matching first (full text, SKU exact/prefix). Only when that finds nothing do we retry with
+   * trigram similarity, so typo tolerance never adds noise to queries that already have real matches.
+   */
   async search(params: SearchParams): Promise<SearchResult> {
     const started = Date.now()
-    const trigram = await this.hasTrigram()
+    const q = normalizeQuery(params.q)
+    const first = await this.execute(params, false)
+    if (first.total > 0 || q.length < 4 || !(await this.hasTrigram()))
+      return { ...first, tookMs: Date.now() - started }
+    const fuzzy = await this.execute(params, true)
+    return { ...fuzzy, tookMs: Date.now() - started }
+  }
+
+  private async execute(params: SearchParams, trigram: boolean): Promise<SearchResult> {
+    const started = Date.now()
     const q = normalizeQuery(params.q)
     const pageSize = Math.min(Math.max(params.pageSize ?? PAGE_SIZE, 1), 100)
     const page = Math.max(params.page ?? 1, 1)

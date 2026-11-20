@@ -47,7 +47,8 @@ export function parseStoredList(raw: string | null): RfqListItem[] {
   }
 }
 
-export const serializeList = (items: RfqListItem[]): string => JSON.stringify({ v: STORAGE_VERSION, items })
+export const serializeList = (items: RfqListItem[]): string =>
+  JSON.stringify({ v: STORAGE_VERSION, items })
 
 export type AddResult = { items: RfqListItem[]; status: 'added' | 'increased' | 'full' }
 
@@ -63,7 +64,10 @@ export function addToList(items: RfqListItem[], item: NewItem): AddResult {
     return { items: next, status: 'increased' }
   }
   if (items.length >= MAX_RFQ_ITEMS) return { items, status: 'full' }
-  return { items: [...items, { ...item, quantity: qty, custom: item.custom ?? false }], status: 'added' }
+  return {
+    items: [...items, { ...item, quantity: qty, custom: item.custom ?? false }],
+    status: 'added',
+  }
 }
 
 export function setQuantity(items: RfqListItem[], sku: string, quantity: number): RfqListItem[] {
@@ -71,7 +75,8 @@ export function setQuantity(items: RfqListItem[], sku: string, quantity: number)
   return items.map((i) => (i.sku === sku ? { ...i, quantity } : i))
 }
 
-export const removeFromList = (items: RfqListItem[], sku: string): RfqListItem[] => items.filter((i) => i.sku !== sku)
+export const removeFromList = (items: RfqListItem[], sku: string): RfqListItem[] =>
+  items.filter((i) => i.sku !== sku)
 
 /* ---- Browser store (useSyncExternalStore) ---------------------------------------------------- */
 
@@ -130,7 +135,14 @@ export const rfqListActions = {
   },
   addCustom(name: string, quantity: number): AddResult {
     const id = `custom-${Math.random().toString(36).slice(2, 10)}`
-    return rfqListActions.add({ sku: id, name: name.trim().slice(0, 300), slug: '', unitOfMeasure: '', quantity, custom: true })
+    return rfqListActions.add({
+      sku: id,
+      name: name.trim().slice(0, 300),
+      slug: '',
+      unitOfMeasure: '',
+      quantity,
+      custom: true,
+    })
   },
   setQuantity(sku: string, quantity: number) {
     writeList(setQuantity(getSnapshot(), sku, quantity))

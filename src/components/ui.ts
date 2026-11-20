@@ -1,4 +1,5 @@
-export const cn = (...parts: (string | false | null | undefined)[]): string => parts.filter(Boolean).join(' ')
+export const cn = (...parts: (string | false | null | undefined)[]): string =>
+  parts.filter(Boolean).join(' ')
 
 type Variant = 'primary' | 'secondary' | 'quiet'
 
@@ -7,7 +8,8 @@ const base =
 
 const variants: Record<Variant, string> = {
   primary: 'bg-brand-800 text-white hover:bg-brand-900 hover:text-white',
-  secondary: 'border-2 border-brand-800 bg-white text-brand-800 hover:bg-brand-50 hover:text-brand-900',
+  secondary:
+    'border-2 border-brand-800 bg-white text-brand-800 hover:bg-brand-50 hover:text-brand-900',
   quiet: 'text-brand-800 underline hover:bg-brand-50',
 }
 

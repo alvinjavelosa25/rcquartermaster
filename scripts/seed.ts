@@ -1,7 +1,7 @@
 /**
  * Seed script: `npm run seed`
  * Loads fictitious sample data (4 categories, 20 products, documents, pages, dev users). Idempotent.
- * Refuses to run against a production environment unless --force is passed.
+ * Refuses to run against a production environment unless `force` is passed (npm run seed -- force).
  */
 import sharp from 'sharp'
 import type { Payload } from 'payload'
@@ -11,8 +11,14 @@ import { buildLexical, type SimpleBlock } from '../src/lib/richtext'
 import { ATTRIBUTES, CATEGORIES, DOCUMENTS, PAGES, PRODUCTS } from './seed-data'
 
 const env = getEnv()
-if (env.SITE_ENV_RESOLVED === 'production' && !process.argv.includes('--force')) {
-  console.error('Refusing to seed a production environment. Pass --force if you really mean it.')
+if (
+  env.SITE_ENV_RESOLVED === 'production' &&
+  !process.argv.includes('force') &&
+  process.env.FORCE_SEED !== '1'
+) {
+  console.error(
+    'Refusing to seed a production environment. Pass `force` (or FORCE_SEED=1) if you really mean it.',
+  )
   process.exit(1)
 }
 
@@ -21,8 +27,20 @@ const password = process.env.SEED_PASSWORD ?? 'ChangeMe-12345!'
 
 const log = (msg: string) => console.log(`[seed] ${msg}`)
 
-async function findOne(collection: 'categories' | 'products' | 'media' | 'documents' | 'pages' | 'attribute-definitions' | 'users', where: object) {
-  const res = await payload.find({ collection, where: where as never, limit: 1, depth: 0, overrideAccess: true, draft: false, pagination: false })
+async function findOne(
+  collection:
+    'categories' | 'products' | 'media' | 'documents' | 'pages' | 'attribute-definitions' | 'users',
+  where: object,
+) {
+  const res = await payload.find({
+    collection,
+    where: where as never,
+    limit: 1,
+    depth: 0,
+    overrideAccess: true,
+    draft: false,
+    pagination: false,
+  })
   return res.docs[0] as { id: number } | undefined
 }
 
@@ -63,7 +81,11 @@ if (env.SITE_ENV_RESOLVED !== 'production') {
     ['sales@example.com', 'Sales User', 'sales'],
   ] as const) {
     if (!(await findOne('users', { email: { equals: email } }))) {
-      await payload.create({ collection: 'users', data: { email, name, role, password }, overrideAccess: true })
+      await payload.create({
+        collection: 'users',
+        data: { email, name, role, password },
+        overrideAccess: true,
+      })
       log(`user ${email} (${role})`)
     }
   }
@@ -74,7 +96,12 @@ const settings = await payload.findGlobal({ slug: 'site-settings', overrideAcces
 if (!settings.phone && !settings.email) {
   await payload.updateGlobal({
     slug: 'site-settings',
-    data: { phone: '(301) 555-0100', email: 'sales@example.com', hours: 'Monday to Friday, 8:00 am to 5:00 pm Eastern', retentionDays: 730 },
+    data: {
+      phone: '(301) 555-0100',
+      email: 'sales@example.com',
+      hours: 'Monday to Friday, 8:00 am to 5:00 pm Eastern',
+      retentionDays: 730,
+    },
     overrideAccess: true,
   })
   log('site settings (sample contact details)')
@@ -92,7 +119,11 @@ for (const a of ATTRIBUTES) {
     collection: 'attribute-definitions',
     overrideAccess: true,
     data: {
-      key: a.key, label: a.label, type: a.type, filterable: a.filterable, sortOrder: a.sortOrder,
+      key: a.key,
+      label: a.label,
+      type: a.type,
+      filterable: a.filterable,
+      sortOrder: a.sortOrder,
       unit: 'unit' in a ? a.unit : undefined,
       options: 'options' in a ? a.options.map((o) => ({ value: o, label: o })) : undefined,
     },
@@ -104,7 +135,10 @@ for (const a of ATTRIBUTES) {
 // ---- Media -----------------------------------------------------------------------------------
 const mediaByTopPath = new Map<string, number>()
 for (const cat of CATEGORIES) {
-  const slug = cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+  const slug = cat.name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
   const filename = `seed-${slug}.png`
   let media = await findOne('media', { filename: { equals: filename } })
   if (!media) {
@@ -121,7 +155,11 @@ for (const cat of CATEGORIES) {
 }
 
 // ---- Categories ------------------------------------------------------------------------------
-const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+const slugify = (s: string) =>
+  s
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
 const categoryIds = new Map<string, number>()
 let sortOrder = 0
 for (const cat of CATEGORIES) {
@@ -129,8 +167,15 @@ for (const cat of CATEGORIES) {
   let top = await findOne('categories', { path: { equals: topSlug } })
   if (!top) {
     top = await payload.create({
-      collection: 'categories', overrideAccess: true,
-      data: { name: cat.name, description: cat.description, image: mediaByTopPath.get(topSlug), sortOrder: sortOrder++, _status: 'published' },
+      collection: 'categories',
+      overrideAccess: true,
+      data: {
+        name: cat.name,
+        description: cat.description,
+        image: mediaByTopPath.get(topSlug),
+        sortOrder: sortOrder++,
+        _status: 'published',
+      } as never,
     })
     log(`category ${topSlug}`)
   }
@@ -140,8 +185,14 @@ for (const cat of CATEGORIES) {
     let sub = await findOne('categories', { path: { equals: path } })
     if (!sub) {
       sub = await payload.create({
-        collection: 'categories', overrideAccess: true,
-        data: { name: child.name, description: child.description, parent: top.id, _status: 'published' },
+        collection: 'categories',
+        overrideAccess: true,
+        data: {
+          name: child.name,
+          description: child.description,
+          parent: top.id,
+          _status: 'published',
+        } as never,
       })
       log(`category ${path}`)
     }
@@ -156,8 +207,16 @@ for (const d of DOCUMENTS) {
   if (!doc) {
     const data = makePdf(d.title)
     doc = await payload.create({
-      collection: 'documents', overrideAccess: true,
-      data: { title: d.title, type: d.type, status: d.status, effectiveDate: d.effectiveDate, expiryDate: d.expiryDate, accessibleAlternative: false },
+      collection: 'documents',
+      overrideAccess: true,
+      data: {
+        title: d.title,
+        type: d.type,
+        status: d.status,
+        effectiveDate: d.effectiveDate,
+        expiryDate: d.expiryDate,
+        accessibleAlternative: false,
+      },
       file: { data, mimetype: 'application/pdf', name: `${d.key}.pdf`, size: data.length },
     })
     log(`document ${d.key}`)
@@ -174,17 +233,24 @@ for (const p of PRODUCTS) {
     collection: 'products',
     overrideAccess: true,
     data: {
-      sku: p.sku, name: p.name, summary: p.summary,
+      sku: p.sku,
+      name: p.name,
+      summary: p.summary,
       description: buildLexical([{ type: 'p', text: p.description }]) as never,
       category: categoryIds.get(p.category),
-      manufacturer: p.manufacturer, manufacturerPartNumber: p.mpn, unitOfMeasure: p.uom,
+      manufacturer: p.manufacturer,
+      manufacturerPartNumber: p.mpn,
+      unitOfMeasure: p.uom,
       availability: p.availability ?? 'available',
       specifications: p.specs.map(([label, value]) => ({ label, value })),
-      attributes: Object.entries(p.attrs ?? {}).map(([key, value]) => ({ attribute: attributeIds.get(key)!, value })),
+      attributes: Object.entries(p.attrs ?? {}).map(([key, value]) => ({
+        attribute: attributeIds.get(key)!,
+        value,
+      })),
       images: [{ image: mediaByTopPath.get(top)! }],
       documents: (p.docs ?? []).map((k) => documentIds.get(k)!).filter(Boolean),
       _status: 'published',
-    },
+    } as never,
   })
   created += 1
 }
@@ -194,8 +260,15 @@ log(`products created: ${created} (total in seed: ${PRODUCTS.length})`)
 for (const [slug, page] of Object.entries(PAGES)) {
   if (await findOne('pages', { slug: { equals: slug } })) continue
   await payload.create({
-    collection: 'pages', overrideAccess: true,
-    data: { title: page.title, slug, intro: page.intro, content: buildLexical(page.blocks as unknown as SimpleBlock[]) as never, _status: 'published' },
+    collection: 'pages',
+    overrideAccess: true,
+    data: {
+      title: page.title,
+      slug,
+      intro: page.intro,
+      content: buildLexical(page.blocks as unknown as SimpleBlock[]) as never,
+      _status: 'published',
+    },
   })
   log(`page ${slug}`)
 }

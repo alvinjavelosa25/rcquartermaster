@@ -12,7 +12,14 @@ export const SearchDocuments: CollectionConfig = {
   access: { read: nobody, create: nobody, update: nobody, delete: nobody },
   timestamps: true,
   fields: [
-    { name: 'product', type: 'relationship', relationTo: 'products', required: true, unique: true, index: true },
+    {
+      name: 'product',
+      type: 'relationship',
+      relationTo: 'products',
+      required: true,
+      unique: true,
+      index: true,
+    },
     { name: 'sku', type: 'text', required: true, index: true },
     { name: 'name', type: 'text', required: true },
     { name: 'slug', type: 'text', required: true },

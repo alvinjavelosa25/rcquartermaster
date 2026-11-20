@@ -23,7 +23,11 @@ async function loadCategory(payload: Payload, id: number, req: PayloadRequest) {
 }
 
 /** Ids of a category and everything below it (breadth-first). */
-async function subtreeIds(payload: Payload, rootId: number, req: PayloadRequest): Promise<number[]> {
+async function subtreeIds(
+  payload: Payload,
+  rootId: number,
+  req: PayloadRequest,
+): Promise<number[]> {
   const ids = [rootId]
   let frontier = [rootId]
   while (frontier.length && ids.length < 5000) {
@@ -50,7 +54,8 @@ export const Categories: CollectionConfig = {
     useAsTitle: 'name',
     defaultColumns: ['name', 'path', 'sortOrder', '_status', 'updatedAt'],
     group: 'Catalogue',
-    description: 'Hierarchical product categories. Only published categories appear on the website.',
+    description:
+      'Hierarchical product categories. Only published categories appear on the website.',
   },
   access: {
     read: publishedOrStaff,
@@ -75,7 +80,12 @@ export const Categories: CollectionConfig = {
           for (let i = 0; cursor && i < 10; i++) {
             if (cursor === selfId) {
               throw new ValidationError({
-                errors: [{ message: 'A category cannot be placed inside itself or its own subcategory.', path: 'parent' }],
+                errors: [
+                  {
+                    message: 'A category cannot be placed inside itself or its own subcategory.',
+                    path: 'parent',
+                  },
+                ],
               })
             }
             const next: { parent?: unknown } = await loadCategory(req.payload, cursor, req)
@@ -99,7 +109,12 @@ export const Categories: CollectionConfig = {
         const depth = depthOfPath(path)
         if (depth > MAX_CATEGORY_DEPTH) {
           throw new ValidationError({
-            errors: [{ message: `Categories can be at most ${MAX_CATEGORY_DEPTH} levels deep.`, path: 'parent' }],
+            errors: [
+              {
+                message: `Categories can be at most ${MAX_CATEGORY_DEPTH} levels deep.`,
+                path: 'parent',
+              },
+            ],
           })
         }
         const clash = await req.payload.find({
@@ -115,7 +130,9 @@ export const Categories: CollectionConfig = {
         })
         if (clash.totalDocs > 0) {
           throw new ValidationError({
-            errors: [{ message: 'Another category at this level already uses this slug.', path: 'slug' }],
+            errors: [
+              { message: 'Another category at this level already uses this slug.', path: 'slug' },
+            ],
           })
         }
         data.path = path
@@ -149,7 +166,10 @@ export const Categories: CollectionConfig = {
           }
         }
         // Search documents carry category ids and names, so refresh affected products.
-        if (previousDoc?.id && (pathChanged || previousDoc.parent !== doc.parent || previousDoc.name !== doc.name)) {
+        if (
+          previousDoc?.id &&
+          (pathChanged || previousDoc.parent !== doc.parent || previousDoc.name !== doc.name)
+        ) {
           const ids = await subtreeIds(req.payload, doc.id, req)
           const products = await req.payload.find({
             collection: COLLECTIONS.products,
@@ -171,16 +191,26 @@ export const Categories: CollectionConfig = {
     beforeDelete: [
       async ({ id, req }) => {
         const [children, products] = await Promise.all([
-          req.payload.count({ collection: COLLECTIONS.categories, where: { parent: { equals: id } }, overrideAccess: true, req }),
+          req.payload.count({
+            collection: COLLECTIONS.categories,
+            where: { parent: { equals: id } },
+            overrideAccess: true,
+            req,
+          }),
           req.payload.count({
             collection: COLLECTIONS.products,
-            where: { or: [{ category: { equals: id } }, { additionalCategories: { contains: id } }] },
+            where: {
+              or: [{ category: { equals: id } }, { additionalCategories: { contains: id } }],
+            },
             overrideAccess: true,
             req,
           }),
         ])
         if (children.totalDocs > 0 || products.totalDocs > 0) {
-          throw new APIError('This category still has subcategories or products. Move or remove them first.', 400)
+          throw new APIError(
+            'This category still has subcategories or products. Move or remove them first.',
+            400,
+          )
         }
       },
     ],
@@ -210,7 +240,11 @@ export const Categories: CollectionConfig = {
       type: 'text',
       unique: true,
       index: true,
-      admin: { readOnly: true, position: 'sidebar', description: 'Computed. Used in the public URL.' },
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+        description: 'Computed. Used in the public URL.',
+      },
     },
     { name: 'depth', type: 'number', admin: { readOnly: true, position: 'sidebar' } },
     { name: 'sortOrder', type: 'number', defaultValue: 0, admin: { position: 'sidebar' } },

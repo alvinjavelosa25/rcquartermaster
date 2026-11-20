@@ -26,10 +26,15 @@ export default async function ThankYouPage({ searchParams }: Props) {
           <p className="mt-1 text-3xl font-bold" data-testid="reference">
             {reference}
           </p>
-          <p className="mt-4">A confirmation has been sent to the email address you provided. Please quote this reference in any correspondence.</p>
+          <p className="mt-4">
+            A confirmation has been sent to the email address you provided. Please quote this
+            reference in any correspondence.
+          </p>
         </>
       ) : (
-        <p className="mt-4 text-lg">A confirmation will be sent to the email address you provided.</p>
+        <p className="mt-4 text-lg">
+          A confirmation will be sent to the email address you provided.
+        </p>
       )}
       <p className="mt-4">{settings.responseTime}</p>
       {(settings.phone || settings.email) && (

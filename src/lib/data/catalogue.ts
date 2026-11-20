@@ -23,7 +23,11 @@ export interface CategoryNode {
 }
 
 const idOf = (v: unknown): number | null =>
-  typeof v === 'number' ? v : v && typeof v === 'object' && 'id' in v ? (v as { id: number }).id : null
+  typeof v === 'number'
+    ? v
+    : v && typeof v === 'object' && 'id' in v
+      ? (v as { id: number }).id
+      : null
 
 function toNode(c: Category): CategoryNode {
   const img = typeof c.image === 'object' && c.image?.filename ? c.image : null
@@ -37,7 +41,9 @@ function toNode(c: Category): CategoryNode {
     description: c.description ?? '',
     seoTitle: c.seoTitle ?? '',
     seoDescription: c.seoDescription ?? '',
-    image: img ? { url: `/api/media/file/${encodeURIComponent(img.filename!)}`, alt: img.alt } : null,
+    image: img
+      ? { url: `/api/media/file/${encodeURIComponent(img.filename!)}`, alt: img.alt }
+      : null,
     sortOrder: c.sortOrder ?? 0,
   }
 }
@@ -57,14 +63,18 @@ export const getCategories = unstable_cache(
       draft: false,
       overrideAccess: false,
     })
-    return res.docs.map(toNode).sort((a, b) => a.sortOrder - b.sortOrder || a.path.localeCompare(b.path))
+    return res.docs
+      .map(toNode)
+      .sort((a, b) => a.sortOrder - b.sortOrder || a.path.localeCompare(b.path))
   },
   ['categories'],
   cacheOpts,
 )
 
 export const childrenOf = (all: CategoryNode[], parentId: number | null) =>
-  all.filter((c) => c.parentId === parentId).sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name))
+  all
+    .filter((c) => c.parentId === parentId)
+    .sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name))
 
 export function breadcrumbFor(all: CategoryNode[], node: CategoryNode): CategoryNode[] {
   const byId = new Map(all.map((c) => [c.id, c]))
@@ -79,10 +89,16 @@ export function breadcrumbFor(all: CategoryNode[], node: CategoryNode): Category
 
 export type PublicProduct = Product
 
-async function loadProduct(slug: string, payload: Payload, draft: boolean): Promise<Product | null> {
+async function loadProduct(
+  slug: string,
+  payload: Payload,
+  draft: boolean,
+): Promise<Product | null> {
   const res = await payload.find({
     collection: COLLECTIONS.products,
-    where: draft ? { slug: { equals: slug } } : { and: [{ slug: { equals: slug } }, { _status: { equals: 'published' } }] },
+    where: draft
+      ? { slug: { equals: slug } }
+      : { and: [{ slug: { equals: slug } }, { _status: { equals: 'published' } }] },
     limit: 1,
     depth: 2,
     draft,
@@ -143,20 +159,31 @@ export const getRelatedProducts = unstable_cache(
 /** Search through the provider-agnostic service. Dynamic: never cached. */
 export async function searchCatalogue(params: SearchParams): Promise<SearchResult> {
   if (skipDbAtBuild()) {
-    return { hits: [], total: 0, page: 1, pageSize: 24, totalPages: 1, categoryCounts: [], attributeFacets: [], tookMs: 0 }
+    return {
+      hits: [],
+      total: 0,
+      page: 1,
+      pageSize: 24,
+      totalPages: 1,
+      categoryCounts: [],
+      attributeFacets: [],
+      tookMs: 0,
+    }
   }
   return getSearchService(await getPayloadClient()).search(params)
 }
 
 /** Cached listing for category pages (first page without filters is the common case). */
 export const getCategoryListing = unstable_cache(
-  async (categoryId: number, page: number): Promise<SearchResult> => searchCatalogue({ categoryId, page }),
+  async (categoryId: number, page: number): Promise<SearchResult> =>
+    searchCatalogue({ categoryId, page }),
   ['category-listing'],
   cacheOpts,
 )
 
 export const getFeaturedProducts = unstable_cache(
-  async (): Promise<SearchResult['hits']> => (await searchCatalogue({ pageSize: 6, sort: 'name' })).hits,
+  async (): Promise<SearchResult['hits']> =>
+    (await searchCatalogue({ pageSize: 6, sort: 'name' })).hits,
   ['featured-products'],
   cacheOpts,
 )
@@ -171,9 +198,36 @@ export const getSitemapEntries = unstable_cache(
     if (skipDbAtBuild()) return []
     const payload = await getPayloadClient()
     const [cats, prods, pages] = await Promise.all([
-      payload.find({ collection: COLLECTIONS.categories, where: { _status: { equals: 'published' } }, limit: 5000, pagination: false, depth: 0, draft: false, overrideAccess: false, select: { path: true, updatedAt: true } }),
-      payload.find({ collection: COLLECTIONS.products, where: { _status: { equals: 'published' } }, limit: 50000, pagination: false, depth: 0, draft: false, overrideAccess: false, select: { slug: true, updatedAt: true } }),
-      payload.find({ collection: COLLECTIONS.pages, where: { _status: { equals: 'published' } }, limit: 100, pagination: false, depth: 0, draft: false, overrideAccess: false, select: { slug: true, updatedAt: true } }),
+      payload.find({
+        collection: COLLECTIONS.categories,
+        where: { _status: { equals: 'published' } },
+        limit: 5000,
+        pagination: false,
+        depth: 0,
+        draft: false,
+        overrideAccess: false,
+        select: { path: true, updatedAt: true },
+      }),
+      payload.find({
+        collection: COLLECTIONS.products,
+        where: { _status: { equals: 'published' } },
+        limit: 50000,
+        pagination: false,
+        depth: 0,
+        draft: false,
+        overrideAccess: false,
+        select: { slug: true, updatedAt: true },
+      }),
+      payload.find({
+        collection: COLLECTIONS.pages,
+        where: { _status: { equals: 'published' } },
+        limit: 100,
+        pagination: false,
+        depth: 0,
+        draft: false,
+        overrideAccess: false,
+        select: { slug: true, updatedAt: true },
+      }),
     ])
     return [
       ...cats.docs.map((c) => ({ path: `/categories/${c.path}`, lastModified: c.updatedAt })),

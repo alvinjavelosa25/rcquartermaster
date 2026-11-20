@@ -42,10 +42,17 @@ export class S3Storage implements PrivateStorage {
     return key
   }
 
-  async createUploadTarget(key: string, opts: { contentType: string; expiresInSeconds: number }): Promise<UploadTarget> {
+  async createUploadTarget(
+    key: string,
+    opts: { contentType: string; expiresInSeconds: number },
+  ): Promise<UploadTarget> {
     const url = await getSignedUrl(
       this.client,
-      new PutObjectCommand({ Bucket: this.bucket, Key: this.guard(key), ContentType: opts.contentType }),
+      new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: this.guard(key),
+        ContentType: opts.contentType,
+      }),
       { expiresIn: opts.expiresInSeconds, signableHeaders: new Set(['content-type']) },
     )
     return { url, method: 'PUT', headers: { 'Content-Type': opts.contentType } }
@@ -53,7 +60,9 @@ export class S3Storage implements PrivateStorage {
 
   async head(key: string): Promise<StorageObjectInfo | null> {
     try {
-      const res = await this.client.send(new HeadObjectCommand({ Bucket: this.bucket, Key: this.guard(key) }))
+      const res = await this.client.send(
+        new HeadObjectCommand({ Bucket: this.bucket, Key: this.guard(key) }),
+      )
       return { size: Number(res.ContentLength ?? 0), contentType: res.ContentType }
     } catch (e) {
       const status = (e as { $metadata?: { httpStatusCode?: number } }).$metadata?.httpStatusCode
@@ -64,13 +73,19 @@ export class S3Storage implements PrivateStorage {
 
   async readRange(key: string, start: number, endInclusive: number): Promise<Uint8Array> {
     const res = await this.client.send(
-      new GetObjectCommand({ Bucket: this.bucket, Key: this.guard(key), Range: `bytes=${start}-${endInclusive}` }),
+      new GetObjectCommand({
+        Bucket: this.bucket,
+        Key: this.guard(key),
+        Range: `bytes=${start}-${endInclusive}`,
+      }),
     )
     return res.Body!.transformToByteArray()
   }
 
   async read(key: string): Promise<Uint8Array> {
-    const res = await this.client.send(new GetObjectCommand({ Bucket: this.bucket, Key: this.guard(key) }))
+    const res = await this.client.send(
+      new GetObjectCommand({ Bucket: this.bucket, Key: this.guard(key) }),
+    )
     return res.Body!.transformToByteArray()
   }
 
@@ -89,7 +104,10 @@ export class S3Storage implements PrivateStorage {
     await this.client.send(new DeleteObjectCommand({ Bucket: this.bucket, Key: this.guard(key) }))
   }
 
-  async createDownloadUrl(key: string, opts: { filename: string; expiresInSeconds: number }): Promise<string> {
+  async createDownloadUrl(
+    key: string,
+    opts: { filename: string; expiresInSeconds: number },
+  ): Promise<string> {
     const safe = opts.filename.replace(/["\\\r\n]/g, '_')
     return getSignedUrl(
       this.client,

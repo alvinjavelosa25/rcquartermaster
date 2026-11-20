@@ -40,10 +40,15 @@ export function singleLine(value: unknown, max = 200): string {
     .slice(0, max)
 }
 
-const fmtBytes = (n: number) => (n >= 1024 * 1024 ? `${(n / 1024 / 1024).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`)
+const fmtBytes = (n: number) =>
+  n >= 1024 * 1024
+    ? `${(n / 1024 / 1024).toFixed(1)} MB`
+    : `${Math.max(1, Math.round(n / 1024))} KB`
 
 const row = (label: string, value: unknown) =>
-  value ? `<tr><th align="left" style="padding:4px 12px 4px 0;vertical-align:top">${escapeHtml(label)}</th><td style="padding:4px 0">${escapeHtml(value).replace(/\n/g, '<br>')}</td></tr>` : ''
+  value
+    ? `<tr><th align="left" style="padding:4px 12px 4px 0;vertical-align:top">${escapeHtml(label)}</th><td style="padding:4px 0">${escapeHtml(value).replace(/\n/g, '<br>')}</td></tr>`
+    : ''
 
 const textRow = (label: string, value: unknown) => (value ? `${label}: ${String(value)}` : '')
 
@@ -59,7 +64,12 @@ function itemsHtml(items: RfqEmailData['items']): string {
 }
 
 function itemsText(items: RfqEmailData['items']): string {
-  return items.map((i) => `- ${i.sku || 'Not in catalogue'} | ${i.name} | ${i.quantity}${i.unitOfMeasure ? ` ${i.unitOfMeasure}` : ''}`).join('\n')
+  return items
+    .map(
+      (i) =>
+        `- ${i.sku || 'Not in catalogue'} | ${i.name} | ${i.quantity}${i.unitOfMeasure ? ` ${i.unitOfMeasure}` : ''}`,
+    )
+    .join('\n')
 }
 
 /** Notification for the sales inbox. Attachments are listed, never attached: staff download them after login. */
@@ -67,7 +77,10 @@ export function renderSalesEmail(rfq: RfqEmailData, adminUrl: string) {
   const subject = singleLine(`New RFQ ${rfq.reference} from ${rfq.organisation}`)
   const attachments = rfq.attachments.length
     ? `<h2 style="font-size:16px">Attachments (${rfq.attachments.length})</h2><ul>${rfq.attachments
-        .map((a) => `<li>${escapeHtml(a.name)} (${fmtBytes(a.size)}), scan: ${escapeHtml(a.status)}</li>`)
+        .map(
+          (a) =>
+            `<li>${escapeHtml(a.name)} (${fmtBytes(a.size)}), scan: ${escapeHtml(a.status)}</li>`,
+        )
         .join('')}</ul><p>Sign in to the admin to download attachments.</p>`
     : ''
   const html = `<!doctype html><html lang="en"><body style="font-family:Arial,Helvetica,sans-serif;color:#111;line-height:1.5">
@@ -96,7 +109,9 @@ ${itemsHtml(rfq.items)}${attachments}
     textRow('Request description', rfq.generalDescription),
     '',
     rfq.items.length ? `Requested items:\n${itemsText(rfq.items)}` : '',
-    rfq.attachments.length ? `\nAttachments: ${rfq.attachments.map((a) => `${a.name} (${fmtBytes(a.size)}, scan: ${a.status})`).join('; ')}` : '',
+    rfq.attachments.length
+      ? `\nAttachments: ${rfq.attachments.map((a) => `${a.name} (${fmtBytes(a.size)}, scan: ${a.status})`).join('; ')}`
+      : '',
   ]
     .filter((l) => l !== '')
     .join('\n')
@@ -136,7 +151,10 @@ ${rfq.attachments.length ? `<p>Attachments received: ${rfq.attachments.map((a) =
 }
 
 /** Merge settings recipients with the env default; drop invalid and duplicate addresses. */
-export function resolveRecipients(fromSettings: string[] | undefined, envList: string | undefined): string[] {
+export function resolveRecipients(
+  fromSettings: string[] | undefined,
+  envList: string | undefined,
+): string[] {
   const source = fromSettings && fromSettings.length > 0 ? fromSettings : (envList ?? '').split(',')
   const seen = new Set<string>()
   const out: string[] = []

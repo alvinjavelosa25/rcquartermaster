@@ -193,7 +193,9 @@ export class PayloadSearchIndexer implements SearchIndexer {
     })
   }
 
-  async reindexAll(opts: { batchSize?: number; onProgress?: (done: number) => void } = {}): Promise<number> {
+  async reindexAll(
+    opts: { batchSize?: number; onProgress?: (done: number) => void } = {},
+  ): Promise<number> {
     const batchSize = opts.batchSize ?? 100
     const seen: number[] = []
     let page = 1

@@ -22,7 +22,14 @@ export const RfqAttachments: CollectionConfig = {
     delete: adminOnly,
   },
   fields: [
-    { name: 'rfq', type: 'relationship', relationTo: 'rfqs', required: true, index: true, admin: { readOnly: true } },
+    {
+      name: 'rfq',
+      type: 'relationship',
+      relationTo: 'rfqs',
+      required: true,
+      index: true,
+      admin: { readOnly: true },
+    },
     { name: 'originalName', type: 'text', required: true, admin: { readOnly: true } },
     { name: 'storageKey', type: 'text', required: true, admin: { readOnly: true, hidden: true } },
     { name: 'declaredMime', type: 'text', admin: { readOnly: true } },

@@ -37,7 +37,10 @@ export async function POST(request: Request) {
   ])
   if (!limited.allowed) {
     return json(
-      { error: `Too many requests from your network. Please try again later. ${FALLBACK}`, retryAfter: limited.retryAfterSeconds },
+      {
+        error: `Too many requests from your network. Please try again later. ${FALLBACK}`,
+        retryAfter: limited.retryAfterSeconds,
+      },
       429,
       { 'Retry-After': String(limited.retryAfterSeconds) },
     )
@@ -54,7 +57,10 @@ export async function POST(request: Request) {
 
   const parsed = rfqSubmissionSchema.safeParse(raw)
   if (!parsed.success) {
-    return json({ error: 'Please correct the highlighted fields.', fields: fieldErrors(parsed.error) }, 400)
+    return json(
+      { error: 'Please correct the highlighted fields.', fields: fieldErrors(parsed.error) },
+      400,
+    )
   }
   const input = parsed.data
 
@@ -73,7 +79,10 @@ export async function POST(request: Request) {
   })
   if (existing.docs[0]) return json({ reference: existing.docs[0].reference, duplicate: true }, 200)
 
-  const verification = await verifyTurnstile(input.turnstileToken, { secret: env.TURNSTILE_SECRET_KEY, ip })
+  const verification = await verifyTurnstile(input.turnstileToken, {
+    secret: env.TURNSTILE_SECRET_KEY,
+    ip,
+  })
   if (!verification.success) {
     return json(
       {
@@ -88,7 +97,11 @@ export async function POST(request: Request) {
 
   const emailHash = createHash('sha256').update(input.email).digest('hex').slice(0, 32)
   const perEmail = await checkRateLimits(payload, [
-    { key: `rfq:email:${emailHash}`, limit: env.RFQ_RATE_LIMIT_PER_EMAIL_PER_DAY, windowSeconds: 86_400 },
+    {
+      key: `rfq:email:${emailHash}`,
+      limit: env.RFQ_RATE_LIMIT_PER_EMAIL_PER_DAY,
+      windowSeconds: 86_400,
+    },
   ])
   if (!perEmail.allowed) {
     return json(
@@ -115,7 +128,10 @@ export async function POST(request: Request) {
           }
         }),
     })
-    return json({ reference: result.reference, duplicate: result.duplicate }, result.duplicate ? 200 : 201)
+    return json(
+      { reference: result.reference, duplicate: result.duplicate },
+      result.duplicate ? 200 : 201,
+    )
   } catch (error) {
     if (error instanceof RfqError) {
       return json({ error: error.message, fields: error.fields }, error.status)

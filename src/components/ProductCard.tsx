@@ -9,7 +9,10 @@ export function ProductCard({ hit, headingLevel = 3 }: { hit: SearchHit; heading
   const Heading = `h${headingLevel}` as 'h2' | 'h3'
   const discontinued = hit.availability === 'discontinued'
   return (
-    <article className="flex h-full flex-col rounded-lg border border-line bg-white" data-testid="product-card">
+    <article
+      className="flex h-full flex-col rounded-lg border border-line bg-white"
+      data-testid="product-card"
+    >
       <div className="aspect-[4/3] overflow-hidden rounded-t-lg bg-surface-alt">
         {hit.image ? (
           <Image
@@ -21,7 +24,11 @@ export function ProductCard({ hit, headingLevel = 3 }: { hit: SearchHit; heading
             className="h-full w-full object-cover"
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-muted" role="img" aria-label="No image available">
+          <div
+            className="flex h-full items-center justify-center text-muted"
+            role="img"
+            aria-label="No image available"
+          >
             No image
           </div>
         )}
@@ -35,7 +42,9 @@ export function ProductCard({ hit, headingLevel = 3 }: { hit: SearchHit; heading
         </Heading>
         {hit.summary && <p className="text-sm">{hit.summary}</p>}
         {hit.availability !== 'available' && (
-          <p className="text-sm font-semibold text-accent">{AVAILABILITY_LABELS[hit.availability as Availability] ?? hit.availability}</p>
+          <p className="text-sm font-semibold text-accent">
+            {AVAILABILITY_LABELS[hit.availability as Availability] ?? hit.availability}
+          </p>
         )}
         <div className="mt-auto pt-2">
           {discontinued ? (
@@ -43,7 +52,10 @@ export function ProductCard({ hit, headingLevel = 3 }: { hit: SearchHit; heading
               Request an alternative<span className="sr-only"> for {hit.name}</span>
             </Link>
           ) : (
-            <AddToRfqButton product={{ sku: hit.sku, name: hit.name, slug: hit.slug }} variant="secondary" />
+            <AddToRfqButton
+              product={{ sku: hit.sku, name: hit.name, slug: hit.slug }}
+              variant="secondary"
+            />
           )}
         </div>
       </div>

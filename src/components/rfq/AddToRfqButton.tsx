@@ -14,7 +14,13 @@ export interface AddToRfqProduct {
 }
 
 /** "Add to RFQ" action. Announces the result politely; focus never moves. */
-export function AddToRfqButton({ product, variant = 'primary' }: { product: AddToRfqProduct; variant?: 'primary' | 'secondary' }) {
+export function AddToRfqButton({
+  product,
+  variant = 'primary',
+}: {
+  product: AddToRfqProduct
+  variant?: 'primary' | 'secondary'
+}) {
   const { items, actions } = useRfqList()
   const [message, setMessage] = useState('')
   const inList = items.find((i) => i.sku === product.sku)
@@ -42,7 +48,8 @@ export function AddToRfqButton({ product, variant = 'primary' }: { product: AddT
   return (
     <div>
       <button type="button" onClick={add} className={buttonClass(variant)}>
-        <span aria-hidden="true">+</span> Add to RFQ<span className="sr-only">: {product.name}</span>
+        <span aria-hidden="true">+</span> Add to RFQ
+        <span className="sr-only">: {product.name}</span>
       </button>
       <p role="status" aria-live="polite" className="mt-2 text-sm">
         {message}

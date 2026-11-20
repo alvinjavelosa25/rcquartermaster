@@ -14,14 +14,20 @@ export interface UploadTarget {
  * a local-disk driver for development and automated tests (never allowed in production).
  */
 export interface PrivateStorage {
-  createUploadTarget(key: string, opts: { contentType: string; expiresInSeconds: number }): Promise<UploadTarget>
+  createUploadTarget(
+    key: string,
+    opts: { contentType: string; expiresInSeconds: number },
+  ): Promise<UploadTarget>
   head(key: string): Promise<StorageObjectInfo | null>
   /** Read bytes [start, endInclusive]. */
   readRange(key: string, start: number, endInclusive: number): Promise<Uint8Array>
   read(key: string): Promise<Uint8Array>
   move(fromKey: string, toKey: string): Promise<void>
   delete(key: string): Promise<void>
-  createDownloadUrl(key: string, opts: { filename: string; expiresInSeconds: number }): Promise<string>
+  createDownloadUrl(
+    key: string,
+    opts: { filename: string; expiresInSeconds: number },
+  ): Promise<string>
   /** Delete objects under `prefix` last modified before `cutoff`. Returns the number deleted. */
   deleteOlderThan(prefix: string, cutoff: Date): Promise<number>
 }

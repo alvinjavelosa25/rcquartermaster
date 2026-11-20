@@ -6,7 +6,13 @@ import type { PrivateStorage, StorageObjectInfo, UploadTarget } from './types'
 
 const ROOT = path.resolve(process.cwd(), '.data/private')
 
-export function signLocalUrl(secret: string, action: 'upload' | 'download', key: string, exp: number, extra = ''): string {
+export function signLocalUrl(
+  secret: string,
+  action: 'upload' | 'download',
+  key: string,
+  exp: number,
+  extra = '',
+): string {
   return createHmac('sha256', secret).update(`${action}\n${key}\n${exp}\n${extra}`).digest('hex')
 }
 
@@ -38,7 +44,10 @@ export const localPath = (key: string): string => {
 export class LocalStorage implements PrivateStorage {
   constructor(private readonly secret: string) {}
 
-  async createUploadTarget(key: string, opts: { contentType: string; expiresInSeconds: number }): Promise<UploadTarget> {
+  async createUploadTarget(
+    key: string,
+    opts: { contentType: string; expiresInSeconds: number },
+  ): Promise<UploadTarget> {
     const exp = Math.floor(Date.now() / 1000) + opts.expiresInSeconds
     const sig = signLocalUrl(this.secret, 'upload', key, exp, opts.contentType)
     const qs = new URLSearchParams({ key, exp: String(exp), sig })
@@ -77,7 +86,10 @@ export class LocalStorage implements PrivateStorage {
     await rm(localPath(key), { force: true })
   }
 
-  async createDownloadUrl(key: string, opts: { filename: string; expiresInSeconds: number }): Promise<string> {
+  async createDownloadUrl(
+    key: string,
+    opts: { filename: string; expiresInSeconds: number },
+  ): Promise<string> {
     const exp = Math.floor(Date.now() / 1000) + opts.expiresInSeconds
     const sig = signLocalUrl(this.secret, 'download', key, exp, opts.filename)
     const qs = new URLSearchParams({ key, exp: String(exp), sig, filename: opts.filename })

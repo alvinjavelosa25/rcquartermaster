@@ -14,7 +14,13 @@ export function Breadcrumbs({ items }: { items: Crumb[] }) {
           const last = i === items.length - 1
           return (
             <li key={`${item.name}-${i}`} className="flex items-center gap-2">
-              {item.href && !last ? <Link href={item.href}>{item.name}</Link> : <span aria-current={last ? 'page' : undefined}>{item.name}</span>}
+              {item.href && !last ? (
+                <Link href={item.href} className="inline-block py-1">
+                  {item.name}
+                </Link>
+              ) : (
+                <span aria-current={last ? 'page' : undefined}>{item.name}</span>
+              )}
               {!last && <span aria-hidden="true">/</span>}
             </li>
           )

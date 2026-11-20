@@ -18,7 +18,8 @@ export default async function ContactPage() {
       <Breadcrumbs items={[{ name: 'Home', href: '/' }, { name: 'Contact' }]} />
       <h1 className="mt-4 text-3xl font-bold">Contact us</h1>
       <p className="mt-3 max-w-3xl text-lg">
-        The fastest way to get pricing is a request for quote. For anything else, contact our team directly.
+        The fastest way to get pricing is a request for quote. For anything else, contact our team
+        directly.
       </p>
       <p className="mt-4">
         <Link href="/rfq" className={buttonClass('primary')}>
@@ -34,12 +35,14 @@ export default async function ContactPage() {
           <address className="mt-3 space-y-2 not-italic">
             {s.phone && (
               <p>
-                <span className="font-semibold">Phone:</span> <a href={`tel:${s.phone.replace(/[^\d+]/g, '')}`}>{s.phone}</a>
+                <span className="font-semibold">Phone:</span>{' '}
+                <a href={`tel:${s.phone.replace(/[^\d+]/g, '')}`}>{s.phone}</a>
               </p>
             )}
             {s.email && (
               <p>
-                <span className="font-semibold">Email:</span> <a href={`mailto:${s.email}`}>{s.email}</a>
+                <span className="font-semibold">Email:</span>{' '}
+                <a href={`mailto:${s.email}`}>{s.email}</a>
               </p>
             )}
             {s.addressLines.length > 0 && (
@@ -61,7 +64,10 @@ export default async function ContactPage() {
             )}
           </address>
         ) : (
-          <p className="mt-3">Contact details will be published here soon. In the meantime, please use the request for quote form.</p>
+          <p className="mt-3">
+            Contact details will be published here soon. In the meantime, please use the request for
+            quote form.
+          </p>
         )}
         {s.responseTime && <p className="mt-4">{s.responseTime}</p>}
       </section>

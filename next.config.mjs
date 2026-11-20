@@ -7,12 +7,14 @@ const redirectMap = JSON.parse(
 )
 
 const isDev = process.env.NODE_ENV !== 'production'
-const siteEnv = process.env.SITE_ENV ?? process.env.VERCEL_ENV ?? (isDev ? 'development' : 'production')
+const siteEnv =
+  process.env.SITE_ENV ?? process.env.VERCEL_ENV ?? (isDev ? 'development' : 'production')
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  agentRules: false,
   experimental: {},
   async headers() {
     return [

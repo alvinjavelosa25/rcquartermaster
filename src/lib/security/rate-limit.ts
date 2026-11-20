@@ -49,7 +49,11 @@ export async function checkRateLimits(
     }
     minRemaining = Math.min(minRemaining, rule.limit - count)
   }
-  return { allowed: true, remaining: Number.isFinite(minRemaining) ? minRemaining : 0, retryAfterSeconds: 0 }
+  return {
+    allowed: true,
+    remaining: Number.isFinite(minRemaining) ? minRemaining : 0,
+    retryAfterSeconds: 0,
+  }
 }
 
 /** Housekeeping: drop counters older than two days. Called from the cleanup cron. */

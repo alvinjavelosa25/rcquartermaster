@@ -15,7 +15,9 @@ export function validateAttributeValue(rule: AttributeRule, raw: string): string
     case 'boolean':
       return value === 'true' || value === 'false' ? null : `${label} must be true or false.`
     case 'enum':
-      return rule.options?.includes(value) ? null : `${label} must be one of: ${(rule.options ?? []).join(', ')}.`
+      return rule.options?.includes(value)
+        ? null
+        : `${label} must be one of: ${(rule.options ?? []).join(', ')}.`
     default:
       return value.length <= 200 ? null : `${label} must be 200 characters or fewer.`
   }

@@ -6,22 +6,45 @@ import { childrenOf, getCategories, getFeaturedProducts } from '@/lib/data/catal
 import { getPublicSettings } from '@/lib/data/settings'
 
 export default async function HomePage() {
-  const [settings, categories, featured] = await Promise.all([getPublicSettings(), getCategories(), getFeaturedProducts()])
+  const [settings, categories, featured] = await Promise.all([
+    getPublicSettings(),
+    getCategories(),
+    getFeaturedProducts(),
+  ])
   const top = childrenOf(categories, null)
 
   return (
     <>
-      <section aria-labelledby="home-heading" className="rounded-xl bg-brand-50 px-6 py-10 md:px-10 md:py-14">
-        <h1 id="home-heading" className="max-w-3xl text-3xl font-bold leading-tight text-brand-900 md:text-5xl">
+      <section
+        aria-labelledby="home-heading"
+        className="rounded-xl bg-brand-50 px-6 py-10 md:px-10 md:py-14"
+      >
+        <h1
+          id="home-heading"
+          className="max-w-3xl text-3xl font-bold leading-tight text-brand-900 md:text-5xl"
+        >
           {settings.homeHeadline}
         </h1>
         <p className="mt-4 max-w-2xl text-lg">{settings.homeSubheadline}</p>
-        <form action="/search" method="get" role="search" className="mt-6 flex max-w-2xl flex-wrap gap-3">
+        <form
+          action="/search"
+          method="get"
+          role="search"
+          aria-label="Find products"
+          className="mt-6 flex max-w-2xl flex-wrap gap-3"
+        >
           <div className="min-w-0 flex-1">
             <label htmlFor="home-search" className="block font-semibold">
               Search by keyword or SKU
             </label>
-            <input id="home-search" name="q" type="search" autoComplete="off" maxLength={200} className={`${inputClass} mt-1`} />
+            <input
+              id="home-search"
+              name="q"
+              type="search"
+              autoComplete="off"
+              maxLength={200}
+              className={`${inputClass} mt-1`}
+            />
           </div>
           <button type="submit" className={`${buttonClass('primary')} self-end`}>
             Search products
@@ -43,7 +66,13 @@ export default async function HomePage() {
             {top.map((c) => (
               <li key={c.id} className="rounded-lg border border-line bg-white">
                 {c.image && (
-                  <Image src={c.image.url} alt="" width={640} height={360} className="aspect-video w-full rounded-t-lg object-cover" />
+                  <Image
+                    src={c.image.url}
+                    alt=""
+                    width={640}
+                    height={360}
+                    className="aspect-video w-full rounded-t-lg object-cover"
+                  />
                 )}
                 <div className="p-4">
                   <h3 className="text-lg font-bold">
@@ -78,9 +107,19 @@ export default async function HomePage() {
         </h2>
         <ol className="mt-6 grid gap-6 md:grid-cols-3">
           {[
-            ['Find products', 'Search or browse approved products and review specifications and documents.'],
-            ['Build your request', 'Add products and quantities, or describe what you need. Attach specifications if you have them.'],
-            ['Receive your quote', settings.responseTime || 'Our team reviews your request and replies with a quotation.'],
+            [
+              'Find products',
+              'Search or browse approved products and review specifications and documents.',
+            ],
+            [
+              'Build your request',
+              'Add products and quantities, or describe what you need. Attach specifications if you have them.',
+            ],
+            [
+              'Receive your quote',
+              settings.responseTime ||
+                'Our team reviews your request and replies with a quotation.',
+            ],
           ].map(([title, text], i) => (
             <li key={title} className="rounded-lg border border-line bg-white p-5">
               <p className="text-sm font-semibold text-muted">Step {i + 1}</p>

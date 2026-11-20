@@ -6,7 +6,11 @@ export const MAX_ATTACHMENTS_CEILING = 10
 
 const trimmed = (max: number) => z.string().trim().max(max)
 const required = (label: string, max: number) =>
-  z.string().trim().min(1, `${label} is required`).max(max, `${label} must be ${max} characters or fewer`)
+  z
+    .string()
+    .trim()
+    .min(1, `${label} is required`)
+    .max(max, `${label} must be ${max} characters or fewer`)
 
 export const rfqItemSchema = z.object({
   /** Catalogue SKU. Empty or missing means a free-text line. */
@@ -23,7 +27,11 @@ export const rfqItemSchema = z.object({
 export const rfqAttachmentRefSchema = z.object({
   key: z.string().regex(/^quarantine\/[0-9a-f-]{36}$/i, 'Invalid attachment reference'),
   name: required('File name', 200),
-  size: z.number().int().min(1).max(500 * 1024 * 1024),
+  size: z
+    .number()
+    .int()
+    .min(1)
+    .max(500 * 1024 * 1024),
   contentType: z.string().trim().max(150),
 })
 
@@ -59,13 +67,16 @@ export const rfqSubmissionSchema = z
     specialInstructions: trimmed(4000).optional().default(''),
     solicitationNumber: trimmed(100).optional().default(''),
     generalDescription: trimmed(4000).optional().default(''),
-    items: z.array(rfqItemSchema).max(MAX_RFQ_ITEMS, `A request can contain at most ${MAX_RFQ_ITEMS} lines`).default([]),
+    items: z
+      .array(rfqItemSchema)
+      .max(MAX_RFQ_ITEMS, `A request can contain at most ${MAX_RFQ_ITEMS} lines`)
+      .default([]),
     attachments: z.array(rfqAttachmentRefSchema).max(MAX_ATTACHMENTS_CEILING).default([]),
     privacyAcknowledged: z.literal(true, { error: 'You must acknowledge the privacy notice' }),
     turnstileToken: z.string().min(1, 'Complete the verification check').max(4096),
     idempotencyKey: z.uuid(),
-    /** Honeypot. Humans never see or fill this field. */
-    website: z.string().max(0).optional().default(''),
+    /** Honeypot. Humans never see or fill this field; the route answers bots with a fake success. */
+    website: z.string().max(500).optional().default(''),
   })
   .superRefine((v, ctx) => {
     if (v.items.length === 0 && v.generalDescription.trim().length < 10) {

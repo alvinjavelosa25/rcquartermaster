@@ -35,7 +35,12 @@ export const Users: CollectionConfig = {
       ({ data }) => {
         if (typeof data?.password === 'string' && data.password.length < MIN_PASSWORD_LENGTH) {
           throw new ValidationError({
-            errors: [{ message: `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`, path: 'password' }],
+            errors: [
+              {
+                message: `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`,
+                path: 'password',
+              },
+            ],
           })
         }
         return data
@@ -45,7 +50,11 @@ export const Users: CollectionConfig = {
       // The very first user created through the admin "create first user" screen becomes Admin.
       async ({ data, operation, req }) => {
         if (operation === 'create') {
-          const existing = await req.payload.count({ collection: 'users', overrideAccess: true, req })
+          const existing = await req.payload.count({
+            collection: 'users',
+            overrideAccess: true,
+            req,
+          })
           if (existing.totalDocs === 0) data.role = 'admin'
         }
         return data

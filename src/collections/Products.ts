@@ -28,7 +28,7 @@ export const Products: CollectionConfig = {
     },
     preview: (doc) =>
       doc?.slug
-        ? `${(process.env.NEXT_PUBLIC_SITE_URL ?? '').replace(/\/+$/, '')}/api/preview?path=${encodeURIComponent(`/products/${doc.slug}`)}`
+        ? `${(process.env.NEXT_PUBLIC_SITE_URL ?? '').replace(/\/+$/, '')}/preview/products/${encodeURIComponent(String(doc.slug))}`
         : null,
   },
   access: {
@@ -84,7 +84,11 @@ export const Products: CollectionConfig = {
           rows.forEach((row, i) => {
             const id = idOf(row.attribute)
             if (id == null) return
-            if (seen.has(id)) errors.push({ message: 'This attribute is listed twice.', path: `attributes.${i}.attribute` })
+            if (seen.has(id))
+              errors.push({
+                message: 'This attribute is listed twice.',
+                path: `attributes.${i}.attribute`,
+              })
             seen.add(id)
           })
           if (errors.length) throw new ValidationError({ errors })
@@ -93,9 +97,12 @@ export const Products: CollectionConfig = {
         // Publishing requires the public-facing essentials.
         if (merged._status === 'published') {
           const errors: { message: string; path: string }[] = []
-          if (!merged.summary) errors.push({ message: 'A summary is required to publish.', path: 'summary' })
-          if (!idOf(merged.category)) errors.push({ message: 'A category is required to publish.', path: 'category' })
-          if (!merged.images?.length) errors.push({ message: 'At least one image is required to publish.', path: 'images' })
+          if (!merged.summary)
+            errors.push({ message: 'A summary is required to publish.', path: 'summary' })
+          if (!idOf(merged.category))
+            errors.push({ message: 'A category is required to publish.', path: 'category' })
+          if (!merged.images?.length)
+            errors.push({ message: 'At least one image is required to publish.', path: 'images' })
           if (errors.length) throw new ValidationError({ errors })
           if (req.user) {
             data.approvedBy = req.user.id
@@ -148,14 +155,28 @@ export const Products: CollectionConfig = {
       name: 'summary',
       type: 'textarea',
       maxLength: 300,
-      admin: { description: 'One or two sentences. Shown on cards and in search results. Required to publish.' },
+      admin: {
+        description:
+          'One or two sentences. Shown on cards and in search results. Required to publish.',
+      },
     },
     { name: 'description', type: 'richText' },
     {
       type: 'row',
       fields: [
-        { name: 'category', type: 'relationship', relationTo: 'categories', index: true, admin: { description: 'Primary category. Required to publish.' } },
-        { name: 'additionalCategories', type: 'relationship', relationTo: 'categories', hasMany: true },
+        {
+          name: 'category',
+          type: 'relationship',
+          relationTo: 'categories',
+          index: true,
+          admin: { description: 'Primary category. Required to publish.' },
+        },
+        {
+          name: 'additionalCategories',
+          type: 'relationship',
+          relationTo: 'categories',
+          hasMany: true,
+        },
       ],
     },
     {
@@ -172,7 +193,10 @@ export const Products: CollectionConfig = {
       required: true,
       defaultValue: 'available',
       options: AVAILABILITY.map((value) => ({ value, label: AVAILABILITY_LABELS[value] })),
-      admin: { position: 'sidebar', description: 'Discontinued products cannot be added to an RFQ.' },
+      admin: {
+        position: 'sidebar',
+        description: 'Discontinued products cannot be added to an RFQ.',
+      },
     },
     {
       name: 'countryOfOrigin',
@@ -199,12 +223,20 @@ export const Products: CollectionConfig = {
       name: 'attributes',
       type: 'array',
       labels: { singular: 'Attribute value', plural: 'Attribute values' },
-      admin: { description: 'Values for configurable attributes. Filterable attributes become search filters.' },
+      admin: {
+        description:
+          'Values for configurable attributes. Filterable attributes become search filters.',
+      },
       fields: [
         {
           type: 'row',
           fields: [
-            { name: 'attribute', type: 'relationship', relationTo: 'attribute-definitions', required: true },
+            {
+              name: 'attribute',
+              type: 'relationship',
+              relationTo: 'attribute-definitions',
+              required: true,
+            },
             { name: 'value', type: 'text', required: true },
           ],
         },
@@ -214,7 +246,9 @@ export const Products: CollectionConfig = {
       name: 'images',
       type: 'array',
       labels: { singular: 'Image', plural: 'Images' },
-      admin: { description: 'The first image is the primary image. At least one is required to publish.' },
+      admin: {
+        description: 'The first image is the primary image. At least one is required to publish.',
+      },
       fields: [{ name: 'image', type: 'upload', relationTo: 'media', required: true }],
     },
     {
@@ -238,8 +272,17 @@ export const Products: CollectionConfig = {
       type: 'row',
       admin: { position: 'sidebar' },
       fields: [
-        { name: 'approvedBy', type: 'relationship', relationTo: 'users', admin: { readOnly: true } },
-        { name: 'approvedAt', type: 'date', admin: { readOnly: true, date: { pickerAppearance: 'dayAndTime' } } },
+        {
+          name: 'approvedBy',
+          type: 'relationship',
+          relationTo: 'users',
+          admin: { readOnly: true },
+        },
+        {
+          name: 'approvedAt',
+          type: 'date',
+          admin: { readOnly: true, date: { pickerAppearance: 'dayAndTime' } },
+        },
       ],
     },
   ],

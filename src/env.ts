@@ -17,7 +17,10 @@ const emptyToUndef = (v: unknown) => (typeof v === 'string' && v.trim() === '' ?
 const schema = z
   .object({
     NEXT_PUBLIC_SITE_URL: z.preprocess(emptyToUndef, z.url().default('http://localhost:3000')),
-    SITE_ENV: z.preprocess(emptyToUndef, z.enum(['development', 'preview', 'production']).optional()),
+    SITE_ENV: z.preprocess(
+      emptyToUndef,
+      z.enum(['development', 'preview', 'production']).optional(),
+    ),
     VERCEL_ENV: z.preprocess(emptyToUndef, z.string().optional()),
     DATABASE_URI: z.string().min(1, 'DATABASE_URI is required'),
     PAYLOAD_SECRET: z.string().min(32, 'PAYLOAD_SECRET must be at least 32 characters'),
@@ -59,21 +62,47 @@ const schema = z
         'S3_PUBLIC_BUCKET',
         'S3_PRIVATE_BUCKET',
       ] as const) {
-        if (!v[k]) ctx.addIssue({ code: 'custom', path: [k], message: `${k} is required when STORAGE_DRIVER=s3` })
+        if (!v[k])
+          ctx.addIssue({
+            code: 'custom',
+            path: [k],
+            message: `${k} is required when STORAGE_DRIVER=s3`,
+          })
       }
     }
     const prod = (v.SITE_ENV ?? v.VERCEL_ENV) === 'production'
     if (prod) {
       if (v.STORAGE_DRIVER === 'local') {
-        ctx.addIssue({ code: 'custom', path: ['STORAGE_DRIVER'], message: 'STORAGE_DRIVER=local is not allowed in production' })
+        ctx.addIssue({
+          code: 'custom',
+          path: ['STORAGE_DRIVER'],
+          message: 'STORAGE_DRIVER=local is not allowed in production',
+        })
       }
-      if (!v.IP_HASH_SALT) ctx.addIssue({ code: 'custom', path: ['IP_HASH_SALT'], message: 'IP_HASH_SALT is required in production' })
-      if (!v.CRON_SECRET) ctx.addIssue({ code: 'custom', path: ['CRON_SECRET'], message: 'CRON_SECRET is required in production' })
-      if (!v.TURNSTILE_SECRET_KEY) ctx.addIssue({ code: 'custom', path: ['TURNSTILE_SECRET_KEY'], message: 'TURNSTILE_SECRET_KEY is required in production' })
+      if (!v.IP_HASH_SALT)
+        ctx.addIssue({
+          code: 'custom',
+          path: ['IP_HASH_SALT'],
+          message: 'IP_HASH_SALT is required in production',
+        })
+      if (!v.CRON_SECRET)
+        ctx.addIssue({
+          code: 'custom',
+          path: ['CRON_SECRET'],
+          message: 'CRON_SECRET is required in production',
+        })
+      if (!v.TURNSTILE_SECRET_KEY)
+        ctx.addIssue({
+          code: 'custom',
+          path: ['TURNSTILE_SECRET_KEY'],
+          message: 'TURNSTILE_SECRET_KEY is required in production',
+        })
     }
   })
 
-export type Env = z.infer<typeof schema> & { SITE_ENV_RESOLVED: 'development' | 'preview' | 'production' }
+export type Env = z.infer<typeof schema> & {
+  SITE_ENV_RESOLVED: 'development' | 'preview' | 'production'
+}
 
 let cached: Env | undefined
 
@@ -82,11 +111,14 @@ export function getEnv(source: Record<string, string | undefined> = process.env)
   if (source === process.env && cached) return cached
   const parsed = schema.safeParse(source)
   if (!parsed.success) {
-    const lines = parsed.error.issues.map((i) => `  - ${i.path.join('.') || '(root)'}: ${i.message}`)
+    const lines = parsed.error.issues.map(
+      (i) => `  - ${i.path.join('.') || '(root)'}: ${i.message}`,
+    )
     throw new Error(`Invalid environment configuration:\n${lines.join('\n')}`)
   }
   const d = parsed.data
-  const vercel = d.VERCEL_ENV === 'production' || d.VERCEL_ENV === 'preview' ? d.VERCEL_ENV : undefined
+  const vercel =
+    d.VERCEL_ENV === 'production' || d.VERCEL_ENV === 'preview' ? d.VERCEL_ENV : undefined
   const resolved =
     d.SITE_ENV ?? vercel ?? (source.NODE_ENV === 'production' ? 'production' : 'development')
   const env: Env = { ...d, SITE_ENV_RESOLVED: resolved }

@@ -19,7 +19,13 @@ export async function GET(request: Request, ctx: { params: Promise<{ job: string
 
   switch (job) {
     case 'email-retry':
-      return json(await runEmailRetry(payload, { mailer: new PayloadMailer(payload), storage, scanner: getScanner() }))
+      return json(
+        await runEmailRetry(payload, {
+          mailer: new PayloadMailer(payload),
+          storage,
+          scanner: getScanner(),
+        }),
+      )
     case 'retention':
       return json(await runRetentionPurge(payload, storage))
     case 'cleanup':

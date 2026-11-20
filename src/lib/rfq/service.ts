@@ -162,7 +162,11 @@ export async function submitRfq(input: RfqSubmission, ctx: SubmitContext): Promi
         retentionExpiresAt,
         idempotencyKey: input.idempotencyKey,
         notifications: { salesEmailStatus: 'pending', buyerEmailStatus: 'pending', attempts: 0 },
-        clientMeta: { ipHash: ctx.ipHash, userAgent: ctx.userAgent.slice(0, 300), turnstileVerified: true },
+        clientMeta: {
+          ipHash: ctx.ipHash,
+          userAgent: ctx.userAgent.slice(0, 300),
+          turnstileVerified: true,
+        },
       },
     })
     rfqId = created.id
@@ -195,7 +199,12 @@ export async function submitRfq(input: RfqSubmission, ctx: SubmitContext): Promi
       await ctx.storage.move(a.key, a.finalKey)
     } catch (error) {
       console.error('[rfq] attachment promotion failed', { reference, error: String(error) })
-      await markAttachment(payload, a.finalKey, 'error', 'File could not be moved to permanent storage')
+      await markAttachment(
+        payload,
+        a.finalKey,
+        'error',
+        'File could not be moved to permanent storage',
+      )
     }
   }
 
@@ -215,7 +224,9 @@ async function verifyAttachments(
   if (refs.length === 0) return []
   const limits = getAttachmentLimits()
   if (new Set(refs.map((r) => r.key)).size !== refs.length) {
-    throw new RfqError('Attachments contain duplicates.', { attachments: 'The same file was attached twice.' })
+    throw new RfqError('Attachments contain duplicates.', {
+      attachments: 'The same file was attached twice.',
+    })
   }
   const verified: VerifiedAttachment[] = []
   const sizes: number[] = []
@@ -228,7 +239,10 @@ async function verifyAttachments(
         attachments: `${name}: the upload was not found. Please attach it again.`,
       })
     }
-    const declared = validateDeclaredFile({ filename: name, size: info.size, contentType: ref.contentType }, limits)
+    const declared = validateDeclaredFile(
+      { filename: name, size: info.size, contentType: ref.contentType },
+      limits,
+    )
     if (!declared.ok) throw new RfqError(declared.error, { attachments: declared.error })
     const ext = extensionOf(name)
     const sample = await storage.readRange(ref.key, 0, Math.min(info.size, MAGIC_SAMPLE_BYTES) - 1)
@@ -255,7 +269,12 @@ async function verifyAttachments(
   return verified
 }
 
-async function markAttachment(payload: Payload, storageKey: string, status: 'clean' | 'infected' | 'error' | 'skipped', detail?: string) {
+async function markAttachment(
+  payload: Payload,
+  storageKey: string,
+  status: 'clean' | 'infected' | 'error' | 'skipped',
+  detail?: string,
+) {
   const found = await payload.find({
     collection: COLLECTIONS.rfqAttachments,
     where: { storageKey: { equals: storageKey } },
@@ -292,20 +311,36 @@ export async function scanAttachments(
     try {
       result = await scanner.scan({ key: att.storageKey, storage, originalName: att.originalName })
     } catch (error) {
-      result = { status: 'error' as const, detail: `Scanner failed: ${String(error).slice(0, 200)}` }
+      result = {
+        status: 'error' as const,
+        detail: `Scanner failed: ${String(error).slice(0, 200)}`,
+      }
     }
     await payload.update({
       collection: COLLECTIONS.rfqAttachments,
       id: att.id,
-      data: { scanStatus: result.status, scannedAt: new Date().toISOString(), scanDetail: result.detail },
+      data: {
+        scanStatus: result.status,
+        scannedAt: new Date().toISOString(),
+        scanDetail: result.detail,
+      },
       overrideAccess: true,
     })
   }
 }
 
 /** Send (or retry) the sales and buyer emails for an RFQ and record the outcome. Idempotent per recipient. */
-export async function deliverNotifications(payload: Payload, mailer: Mailer, rfqId: number): Promise<void> {
-  const rfq = await payload.findByID({ collection: COLLECTIONS.rfqs, id: rfqId, depth: 0, overrideAccess: true })
+export async function deliverNotifications(
+  payload: Payload,
+  mailer: Mailer,
+  rfqId: number,
+): Promise<void> {
+  const rfq = await payload.findByID({
+    collection: COLLECTIONS.rfqs,
+    id: rfqId,
+    depth: 0,
+    overrideAccess: true,
+  })
   const n = rfq.notifications ?? {}
   if (n.salesEmailStatus === 'sent' && n.buyerEmailStatus === 'sent') return
 
@@ -330,8 +365,17 @@ export async function deliverNotifications(payload: Payload, mailer: Mailer, rfq
     deliveryDetails: rfq.deliveryDetails,
     specialInstructions: rfq.specialInstructions,
     generalDescription: rfq.generalDescription,
-    items: (rfq.items ?? []).map((i) => ({ sku: i.sku, name: i.name, quantity: i.quantity, unitOfMeasure: i.unitOfMeasure })),
-    attachments: attachments.docs.map((a) => ({ name: a.originalName, size: a.sizeBytes ?? 0, status: a.scanStatus })),
+    items: (rfq.items ?? []).map((i) => ({
+      sku: i.sku,
+      name: i.name,
+      quantity: i.quantity,
+      unitOfMeasure: i.unitOfMeasure,
+    })),
+    attachments: attachments.docs.map((a) => ({
+      name: a.originalName,
+      size: a.sizeBytes ?? 0,
+      status: a.scanStatus,
+    })),
     createdAt: rfq.createdAt,
   }
 
@@ -340,13 +384,19 @@ export async function deliverNotifications(payload: Payload, mailer: Mailer, rfq
   const errors: string[] = []
 
   if (salesStatus !== 'sent') {
-    const to = resolveRecipients(settings.rfqRecipients?.map((r) => r.email), getEnv().RFQ_NOTIFY_TO)
+    const to = resolveRecipients(
+      settings.rfqRecipients?.map((r) => r.email),
+      getEnv().RFQ_NOTIFY_TO,
+    )
     if (to.length === 0) {
       salesStatus = 'failed'
       errors.push('No valid sales recipients configured')
     } else {
       try {
-        await mailer.send({ to, ...renderSalesEmail(data, `${siteUrl()}/admin/collections/rfqs/${rfq.id}`) })
+        await mailer.send({
+          to,
+          ...renderSalesEmail(data, `${siteUrl()}/admin/collections/rfqs/${rfq.id}`),
+        })
         salesStatus = 'sent'
       } catch (error) {
         salesStatus = 'failed'
@@ -386,5 +436,6 @@ export async function deliverNotifications(payload: Payload, mailer: Mailer, rfq
       },
     },
   })
-  if (errors.length) console.error('[rfq] notification problems', { reference: rfq.reference, errors })
+  if (errors.length)
+    console.error('[rfq] notification problems', { reference: rfq.reference, errors })
 }

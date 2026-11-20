@@ -18,8 +18,16 @@ const config = [
   },
   {
     rules: {
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
     },
+  },
+  {
+    // Playwright fixtures call `use(...)`, which is not a React hook.
+    files: ['tests/e2e/**'],
+    rules: { 'react-hooks/rules-of-hooks': 'off' },
   },
 ]
 

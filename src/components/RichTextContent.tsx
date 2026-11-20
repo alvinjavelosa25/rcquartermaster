@@ -1,8 +1,15 @@
-import { LinkJSXConverter, RichText, type JSXConvertersFunction } from '@payloadcms/richtext-lexical/react'
+import {
+  LinkJSXConverter,
+  RichText,
+  type JSXConvertersFunction,
+} from '@payloadcms/richtext-lexical/react'
 import type { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical'
 import type { SerializedLinkNode } from '@payloadcms/richtext-lexical'
 
-type InternalDoc = { relationTo?: string; value?: { slug?: string; path?: string } | number | string }
+type InternalDoc = {
+  relationTo?: string
+  value?: { slug?: string; path?: string } | number | string
+}
 
 function internalDocToHref({ linkNode }: { linkNode: SerializedLinkNode }): string {
   const doc = (linkNode.fields as { doc?: InternalDoc }).doc

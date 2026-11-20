@@ -13,7 +13,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     if (seen.has(path)) continue
     seen.add(path)
     const found = dynamic.find((d) => d.path === path)
-    entries.push({ url: `${base}${path === '/' ? '' : path}`, ...(found?.lastModified ? { lastModified: found.lastModified } : {}) })
+    entries.push({
+      url: `${base}${path === '/' ? '' : path}`,
+      ...(found?.lastModified ? { lastModified: found.lastModified } : {}),
+    })
   }
   return entries
 }

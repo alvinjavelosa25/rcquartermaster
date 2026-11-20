@@ -55,15 +55,23 @@ async function loadPublicSettings(): Promise<PublicSettings> {
     homeSubheadline: s.homeSubheadline || DEFAULT_SETTINGS.homeSubheadline,
     phone: s.phone ?? '',
     email: s.email ?? '',
-    addressLines: (s.addressLines ?? '').split('\n').map((l) => l.trim()).filter(Boolean),
+    addressLines: (s.addressLines ?? '')
+      .split('\n')
+      .map((l) => l.trim())
+      .filter(Boolean),
     hours: s.hours ?? '',
     responseTime: s.responseTime ?? '',
     // Only identifiers the client has marked as verified are ever shown.
-    identifiers: (s.identifiers ?? []).filter((i) => i.verified).map((i) => ({ label: i.label, value: i.value })),
+    identifiers: (s.identifiers ?? [])
+      .filter((i) => i.verified)
+      .map((i) => ({ label: i.label, value: i.value })),
     certifications: (s.certifications ?? [])
       .filter((c) => c.verified)
       .map((c) => ({ label: c.label, description: c.description ?? '' })),
-    capabilityStatementUrl: doc && doc.status === 'published' && doc.filename ? `/api/documents/file/${encodeURIComponent(doc.filename)}` : null,
+    capabilityStatementUrl:
+      doc && doc.status === 'published' && doc.filename
+        ? `/api/documents/file/${encodeURIComponent(doc.filename)}`
+        : null,
   }
 }
 

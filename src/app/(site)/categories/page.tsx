@@ -19,7 +19,8 @@ export default async function CategoriesPage() {
       <h1 className="mt-4 text-3xl font-bold">Product categories</h1>
       {top.length === 0 ? (
         <p className="mt-6">
-          No categories are published yet. <Link href="/rfq">Submit a general request for quote</Link>.
+          No categories are published yet.{' '}
+          <Link href="/rfq">Submit a general request for quote</Link>.
         </p>
       ) : (
         <ul className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -27,7 +28,15 @@ export default async function CategoriesPage() {
             const subs = childrenOf(all, c.id)
             return (
               <li key={c.id} className="rounded-lg border border-line bg-white">
-                {c.image && <Image src={c.image.url} alt="" width={640} height={360} className="aspect-video w-full rounded-t-lg object-cover" />}
+                {c.image && (
+                  <Image
+                    src={c.image.url}
+                    alt=""
+                    width={640}
+                    height={360}
+                    className="aspect-video w-full rounded-t-lg object-cover"
+                  />
+                )}
                 <div className="p-4">
                   <h2 className="text-xl font-bold">
                     <Link href={`/categories/${c.path}`}>{c.name}</Link>

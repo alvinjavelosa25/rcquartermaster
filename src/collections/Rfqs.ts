@@ -3,33 +3,42 @@ import { adminOnly, nobody, nobodyField, rfqStaff, rfqStaffField } from '@/acces
 import { RFQ_STATUSES, RFQ_STATUS_LABELS } from '@/lib/constants'
 
 /** Fields supplied by the buyer. Immutable for everyone once the record exists. */
-const immutable = (field: Field): Field => ({
-  ...(field as object),
-  access: { update: nobodyField },
-}) as Field
+const immutable = (field: Field): Field =>
+  ({
+    ...(field as object),
+    access: { update: nobodyField },
+  }) as Field
 
 const buyerFields: Field[] = [
   {
     type: 'row',
-    fields: ([
-      { name: 'buyerName', type: 'text', required: true },
-      { name: 'email', type: 'email', required: true, index: true },
-      { name: 'phone', type: 'text', required: true },
-    ] satisfies Field[]).map(immutable),
+    fields: (
+      [
+        { name: 'buyerName', type: 'text', required: true },
+        { name: 'email', type: 'email', required: true, index: true },
+        { name: 'phone', type: 'text', required: true },
+      ] satisfies Field[]
+    ).map(immutable),
   },
   {
     type: 'row',
-    fields: ([
-      { name: 'organisation', type: 'text', required: true, index: true },
-      { name: 'facility', type: 'text' },
-      { name: 'buyerRole', type: 'text' },
-    ] satisfies Field[]).map(immutable),
+    fields: (
+      [
+        { name: 'organisation', type: 'text', required: true, index: true },
+        { name: 'facility', type: 'text' },
+        { name: 'buyerRole', type: 'text' },
+      ] satisfies Field[]
+    ).map(immutable),
   },
   immutable({ name: 'neededBy', type: 'date', admin: { date: { pickerAppearance: 'dayOnly' } } }),
   immutable({ name: 'solicitationNumber', type: 'text' }),
   immutable({ name: 'deliveryDetails', type: 'textarea' }),
   immutable({ name: 'specialInstructions', type: 'textarea' }),
-  immutable({ name: 'generalDescription', type: 'textarea', admin: { description: 'Used when the buyer did not select catalogue items.' } }),
+  immutable({
+    name: 'generalDescription',
+    type: 'textarea',
+    admin: { description: 'Used when the buyer did not select catalogue items.' },
+  }),
   immutable({
     name: 'items',
     type: 'array',
@@ -44,7 +53,12 @@ const buyerFields: Field[] = [
           { name: 'unitOfMeasure', type: 'text' },
         ],
       },
-      { name: 'product', type: 'relationship', relationTo: 'products', admin: { description: 'Linked catalogue product, if it still exists.' } },
+      {
+        name: 'product',
+        type: 'relationship',
+        relationTo: 'products',
+        admin: { description: 'Linked catalogue product, if it still exists.' },
+      },
     ],
   }),
 ]
@@ -57,7 +71,8 @@ export const Rfqs: CollectionConfig = {
     group: 'Requests for quote',
     defaultColumns: ['reference', 'status', 'buyerName', 'organisation', 'createdAt'],
     listSearchableFields: ['reference', 'buyerName', 'organisation', 'email', 'itemSkus'],
-    description: 'Requests for quote submitted through the website. Buyer-supplied fields are read-only.',
+    description:
+      'Requests for quote submitted through the website. Buyer-supplied fields are read-only.',
     components: { beforeList: ['/components/admin/RfqCsvTools#RfqCsvTools'] },
   },
   access: {
@@ -72,9 +87,17 @@ export const Rfqs: CollectionConfig = {
     beforeChange: [
       ({ data, originalDoc, operation, req }) => {
         const items: { sku?: string | null }[] = data.items ?? originalDoc?.items ?? []
-        data.itemSkus = items.map((i) => i.sku).filter(Boolean).join(' ')
+        data.itemSkus = items
+          .map((i) => i.sku)
+          .filter(Boolean)
+          .join(' ')
 
-        if (operation === 'update' && data.status && originalDoc?.status && data.status !== originalDoc.status) {
+        if (
+          operation === 'update' &&
+          data.status &&
+          originalDoc?.status &&
+          data.status !== originalDoc.status
+        ) {
           const history = Array.isArray(originalDoc.statusHistory) ? originalDoc.statusHistory : []
           data.statusHistory = [
             ...history,
@@ -134,7 +157,11 @@ export const Rfqs: CollectionConfig = {
       fields: [
         { name: 'body', type: 'textarea', required: true },
         { name: 'author', type: 'relationship', relationTo: 'users', admin: { readOnly: true } },
-        { name: 'createdAt', type: 'date', admin: { readOnly: true, date: { pickerAppearance: 'dayAndTime' } } },
+        {
+          name: 'createdAt',
+          type: 'date',
+          admin: { readOnly: true, date: { pickerAppearance: 'dayAndTime' } },
+        },
       ],
       hooks: {
         beforeChange: [
@@ -168,14 +195,29 @@ export const Rfqs: CollectionConfig = {
       admin: { initCollapsed: true },
       fields: [
         immutable({ name: 'privacyAcknowledgedAt', type: 'date' }),
-        immutable({ name: 'retentionExpiresAt', type: 'date', index: true, admin: { description: 'RFQ and attachments are deleted after this date.' } }),
+        immutable({
+          name: 'retentionExpiresAt',
+          type: 'date',
+          index: true,
+          admin: { description: 'RFQ and attachments are deleted after this date.' },
+        }),
         immutable({ name: 'idempotencyKey', type: 'text', unique: true, index: true }),
         immutable({
           name: 'notifications',
           type: 'group',
           fields: [
-            { name: 'salesEmailStatus', type: 'select', defaultValue: 'pending', options: ['pending', 'sent', 'failed'] },
-            { name: 'buyerEmailStatus', type: 'select', defaultValue: 'pending', options: ['pending', 'sent', 'failed'] },
+            {
+              name: 'salesEmailStatus',
+              type: 'select',
+              defaultValue: 'pending',
+              options: ['pending', 'sent', 'failed'],
+            },
+            {
+              name: 'buyerEmailStatus',
+              type: 'select',
+              defaultValue: 'pending',
+              options: ['pending', 'sent', 'failed'],
+            },
             { name: 'attempts', type: 'number', defaultValue: 0 },
             { name: 'lastAttemptAt', type: 'date' },
             { name: 'lastError', type: 'text' },

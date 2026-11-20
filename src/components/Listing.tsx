@@ -23,8 +23,20 @@ interface Props {
 }
 
 /** Filters + results grid shared by category and search pages. Works without JavaScript. */
-export function Listing({ result, parsed, basePath, keep = {}, narrowLinks = [], narrowHeading = 'Narrow by category' }: Props) {
-  const base = { q: parsed.q, category: keep.category ?? '', sort: parsed.sort, attributes: parsed.attributes }
+export function Listing({
+  result,
+  parsed,
+  basePath,
+  keep = {},
+  narrowLinks = [],
+  narrowHeading = 'Narrow by category',
+}: Props) {
+  const base = {
+    q: parsed.q,
+    category: keep.category ?? '',
+    sort: parsed.sort,
+    attributes: parsed.attributes,
+  }
   const hrefFor = (page: number) => `${basePath}${buildListingQuery({ ...base, page })}`
   const hasFilters = Object.keys(parsed.attributes).length > 0
   const sortValue = parsed.sort ?? (parsed.q ? 'relevance' : 'name')
@@ -38,7 +50,8 @@ export function Listing({ result, parsed, basePath, keep = {}, narrowLinks = [],
             <ul className="mt-2 space-y-1">
               {narrowLinks.map((l) => (
                 <li key={l.href}>
-                  <Link href={l.href}>{l.name}</Link> <span className="text-muted">({l.count})</span>
+                  <Link href={l.href}>{l.name}</Link>{' '}
+                  <span className="text-muted">({l.count})</span>
                 </li>
               ))}
             </ul>
@@ -69,7 +82,14 @@ export function Listing({ result, parsed, basePath, keep = {}, narrowLinks = [],
                   const id = `attr-${facet.key}-${v.value}`.replace(/[^a-zA-Z0-9_-]/g, '_')
                   return (
                     <li key={v.value} className="flex items-center gap-2">
-                      <input id={id} type="checkbox" name={`attr.${facet.key}`} value={v.value} defaultChecked={v.selected} className="h-5 w-5" />
+                      <input
+                        id={id}
+                        type="checkbox"
+                        name={`attr.${facet.key}`}
+                        value={v.value}
+                        defaultChecked={v.selected}
+                        className="h-5 w-5"
+                      />
                       <label htmlFor={id}>
                         {v.label} <span className="text-muted">({v.count})</span>
                       </label>
@@ -84,7 +104,10 @@ export function Listing({ result, parsed, basePath, keep = {}, narrowLinks = [],
               Apply filters
             </button>
             {hasFilters && (
-              <Link href={`${basePath}${buildListingQuery({ q: parsed.q, category: keep.category })}`} className="font-semibold">
+              <Link
+                href={`${basePath}${buildListingQuery({ q: parsed.q, category: keep.category })}`}
+                className="font-semibold"
+              >
                 Clear all filters
               </Link>
             )}
@@ -92,9 +115,14 @@ export function Listing({ result, parsed, basePath, keep = {}, narrowLinks = [],
         </form>
       </aside>
 
-      <section aria-label="Results">
+      <section aria-labelledby="results-heading">
+        <h2 id="results-heading" className="sr-only">
+          Products
+        </h2>
         <p role="status" aria-live="polite" className="mb-4 text-muted" data-testid="result-count">
-          {result.total === 0 ? 'No products found.' : `${result.total} ${result.total === 1 ? 'product' : 'products'} found.`}
+          {result.total === 0
+            ? 'No products found.'
+            : `${result.total} ${result.total === 1 ? 'product' : 'products'} found.`}
           {result.totalPages > 1 && ` Page ${result.page} of ${result.totalPages}.`}
         </p>
 
@@ -116,7 +144,8 @@ export function Listing({ result, parsed, basePath, keep = {}, narrowLinks = [],
                 <Link href="/categories">Browse all product categories</Link>.
               </li>
               <li>
-                Cannot find it? <Link href="/rfq">Submit a general request for quote</Link> and we will source it.
+                Cannot find it? <Link href="/rfq">Submit a general request for quote</Link> and we
+                will source it.
               </li>
             </ul>
           </div>

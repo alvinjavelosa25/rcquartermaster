@@ -1,0 +1,99 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: '22'
+  # Dummy values: CI never talks to real services. Secrets are never needed for lint, types, unit tests or build.
+  PAYLOAD_SECRET: ci-only-secret-ci-only-secret-ci-only-secret
+  IP_HASH_SALT: ci-only-salt-ci-only-salt
+  CRON_SECRET: ci-only-cron-secret-ci-only
+  NEXT_PUBLIC_SITE_URL: http://localhost:3000
+  SITE_ENV: development
+  STORAGE_DRIVER: local
+  NEXT_PUBLIC_TURNSTILE_SITE_KEY: 1x00000000000000000000AA
+  TURNSTILE_SECRET_KEY: 1x0000000000000000000000000000000AA
+  NEXT_TELEMETRY_DISABLED: '1'
+
+jobs:
+  check:
+    name: Lint, typecheck, unit tests, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DATABASE_URI: postgres://ci:ci@localhost:5432/ci
+      # The build runs without a database: data helpers return empty data (see src/lib/payload.ts).
+      SKIP_BUILD_DB: 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - name: Dependency audit (high and critical only)
+        run: npm audit --audit-level=high --omit=dev
+
+  e2e:
+    name: End-to-end and accessibility tests
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: rcq
+          POSTGRES_PASSWORD: rcq
+          POSTGRES_DB: rcq
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U rcq -d rcq"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      DATABASE_URI: postgres://rcq:rcq@localhost:5432/rcq
+      SKIP_BUILD_DB: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Apply database migrations
+        run: npm run migrate
+      - name: Seed sample data
+        run: npm run seed
+      - run: npm run build
+      - name: Run Playwright tests (includes axe checks)
+        run: npx playwright test
+        env:
+          CI: 'true'
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report
+            test-results
+          retention-days: 7

@@ -68,8 +68,14 @@ export async function runRetentionPurge(
       overrideAccess: true,
     })
     for (const a of atts.docs) {
-      await storage.delete(a.storageKey).catch((e) => console.error('[retention] file delete failed', String(e)))
-      await payload.delete({ collection: COLLECTIONS.rfqAttachments, id: a.id, overrideAccess: true })
+      await storage
+        .delete(a.storageKey)
+        .catch((e) => console.error('[retention] file delete failed', String(e)))
+      await payload.delete({
+        collection: COLLECTIONS.rfqAttachments,
+        id: a.id,
+        overrideAccess: true,
+      })
       filesDeleted += 1
     }
     await payload.delete({ collection: COLLECTIONS.rfqs, id: rfq.id, overrideAccess: true })
@@ -85,6 +91,9 @@ export async function runCleanup(
   now = Date.now(),
 ): Promise<{ rateLimitRows: number; quarantineFiles: number }> {
   const rateLimitRows = await purgeRateLimits(payload)
-  const quarantineFiles = await storage.deleteOlderThan('quarantine/', new Date(now - 24 * 3600_000))
+  const quarantineFiles = await storage.deleteOlderThan(
+    'quarantine/',
+    new Date(now - 24 * 3600_000),
+  )
   return { rateLimitRows, quarantineFiles }
 }

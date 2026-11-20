@@ -13,7 +13,8 @@ export interface ParsedListing {
 
 const KEY_RE = /^[a-z0-9_]{1,64}$/
 
-const first = (v: string | string[] | undefined): string => (Array.isArray(v) ? (v[0] ?? '') : (v ?? ''))
+const first = (v: string | string[] | undefined): string =>
+  Array.isArray(v) ? (v[0] ?? '') : (v ?? '')
 const all = (v: string | string[] | undefined): string[] => (Array.isArray(v) ? v : v ? [v] : [])
 
 /** Parse and sanitise listing/search URL parameters. Unknown or malformed values are dropped. */
@@ -22,7 +23,8 @@ export function parseListingParams(raw: RawSearchParams): ParsedListing {
   const pageNum = Number.parseInt(first(raw.page), 10)
   const page = Number.isFinite(pageNum) && pageNum >= 1 ? Math.min(pageNum, 1000) : 1
   const sortRaw = first(raw.sort)
-  const sort = sortRaw === 'relevance' || sortRaw === 'name' || sortRaw === 'sku' ? sortRaw : undefined
+  const sort =
+    sortRaw === 'relevance' || sortRaw === 'name' || sortRaw === 'sku' ? sortRaw : undefined
   const attributes: Record<string, string[]> = {}
   for (const [key, value] of Object.entries(raw)) {
     if (!key.startsWith('attr.')) continue
@@ -34,7 +36,12 @@ export function parseListingParams(raw: RawSearchParams): ParsedListing {
       .slice(0, 20)
     if (values.length) attributes[attrKey] = values
   }
-  const category = first(raw.category).replace(/[^a-z0-9/-]/gi, '').slice(0, 200)
+  const category = first(raw.category)
+    .replace(/[^a-z0-9/-]/gi, '')
+    .split('/')
+    .filter((s) => s && s !== '.' && s !== '..')
+    .join('/')
+    .slice(0, 200)
   return { q, page, sort, attributes, category }
 }
 

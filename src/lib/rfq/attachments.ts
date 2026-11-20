@@ -40,10 +40,54 @@ export const ALLOWED_ATTACHMENTS: Record<string, AllowedType> = {
 
 /** Extensions that must never be accepted, even as an inner extension (for example "a.exe.pdf" is checked too). */
 const DANGEROUS_EXTENSIONS = new Set([
-  'exe', 'dll', 'bat', 'cmd', 'com', 'scr', 'msi', 'ps1', 'psm1', 'vbs', 'vbe', 'js', 'jse', 'mjs',
-  'wsf', 'wsh', 'jar', 'sh', 'bash', 'zsh', 'app', 'apk', 'dmg', 'iso', 'lnk', 'reg', 'hta', 'html',
-  'htm', 'xhtml', 'svg', 'swf', 'php', 'py', 'rb', 'pl', 'docm', 'xlsm', 'pptm', 'dotm', 'xlam',
-  'zip', 'rar', '7z', 'tar', 'gz', 'tgz', 'bz2',
+  'exe',
+  'dll',
+  'bat',
+  'cmd',
+  'com',
+  'scr',
+  'msi',
+  'ps1',
+  'psm1',
+  'vbs',
+  'vbe',
+  'js',
+  'jse',
+  'mjs',
+  'wsf',
+  'wsh',
+  'jar',
+  'sh',
+  'bash',
+  'zsh',
+  'app',
+  'apk',
+  'dmg',
+  'iso',
+  'lnk',
+  'reg',
+  'hta',
+  'html',
+  'htm',
+  'xhtml',
+  'svg',
+  'swf',
+  'php',
+  'py',
+  'rb',
+  'pl',
+  'docm',
+  'xlsm',
+  'pptm',
+  'dotm',
+  'xlam',
+  'zip',
+  'rar',
+  '7z',
+  'tar',
+  'gz',
+  'tgz',
+  'bz2',
 ])
 
 export interface AttachmentLimits {
@@ -52,7 +96,8 @@ export interface AttachmentLimits {
   maxTotalBytes: number
 }
 
-export type ValidationResult = { ok: true; ext: string; uploadType: string } | { ok: false; error: string }
+export type ValidationResult =
+  { ok: true; ext: string; uploadType: string } | { ok: false; error: string }
 
 /** Remove path parts, control/bidi characters and collapse whitespace. For display only; never used as a storage key. */
 export function sanitizeFilename(name: string): string {
@@ -81,7 +126,10 @@ export function validateDeclaredFile(
   const parts = clean.toLowerCase().split('.')
   const ext = parts.length > 1 ? (parts.at(-1) ?? '') : ''
   if (!ext || !(ext in ALLOWED_ATTACHMENTS)) {
-    return { ok: false, error: `${clean}: this file type is not allowed. Allowed: ${Object.keys(ALLOWED_ATTACHMENTS).join(', ')}.` }
+    return {
+      ok: false,
+      error: `${clean}: this file type is not allowed. Allowed: ${Object.keys(ALLOWED_ATTACHMENTS).join(', ')}.`,
+    }
   }
   // Reject dangerous inner extensions, for example "report.exe.pdf".
   if (parts.slice(1, -1).some((p) => DANGEROUS_EXTENSIONS.has(p))) {
@@ -91,7 +139,10 @@ export function validateDeclaredFile(
     return { ok: false, error: `${clean}: the file is empty.` }
   }
   if (file.size > limits.maxFileBytes) {
-    return { ok: false, error: `${clean}: the file is larger than ${Math.floor(limits.maxFileBytes / 1024 / 1024)} MB.` }
+    return {
+      ok: false,
+      error: `${clean}: the file is larger than ${Math.floor(limits.maxFileBytes / 1024 / 1024)} MB.`,
+    }
   }
   const allowed = ALLOWED_ATTACHMENTS[ext]!
   const declared = file.contentType.trim().toLowerCase().split(';')[0] ?? ''
@@ -110,7 +161,8 @@ export function validateBatch(sizes: number[], limits: AttachmentLimits): string
   return null
 }
 
-const startsWith = (b: Uint8Array, sig: number[], offset = 0) => sig.every((v, i) => b[offset + i] === v)
+const startsWith = (b: Uint8Array, sig: number[], offset = 0) =>
+  sig.every((v, i) => b[offset + i] === v)
 
 /** Detect a file kind from the leading bytes. Returns null when nothing allowed matches. */
 export function detectKind(bytes: Uint8Array): FileKind | null {
@@ -132,7 +184,9 @@ function isProbablyText(bytes: Uint8Array): boolean {
   } catch {
     // The sample may cut a multi-byte sequence at the end; retry without the last 3 bytes.
     try {
-      new TextDecoder('utf-8', { fatal: true }).decode(bytes.slice(0, Math.max(0, bytes.length - 3)))
+      new TextDecoder('utf-8', { fatal: true }).decode(
+        bytes.slice(0, Math.max(0, bytes.length - 3)),
+      )
       return true
     } catch {
       return false

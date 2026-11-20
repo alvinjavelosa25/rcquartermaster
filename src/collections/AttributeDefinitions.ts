@@ -36,8 +36,12 @@ export const AttributeDefinitions: CollectionConfig = {
       unique: true,
       index: true,
       validate: (value: string | null | undefined) =>
-        /^[a-z0-9_]{1,64}$/.test(value ?? '') || 'Use lowercase letters, numbers and underscores only (for example glove_size).',
-      admin: { description: 'Machine name used in CSV files and URLs. Cannot be changed safely once products use it.' },
+        /^[a-z0-9_]{1,64}$/.test(value ?? '') ||
+        'Use lowercase letters, numbers and underscores only (for example glove_size).',
+      admin: {
+        description:
+          'Machine name used in CSV files and URLs. Cannot be changed safely once products use it.',
+      },
     },
     {
       name: 'type',
@@ -51,7 +55,11 @@ export const AttributeDefinitions: CollectionConfig = {
         { label: 'List of options', value: 'enum' },
       ],
     },
-    { name: 'unit', type: 'text', admin: { description: 'Optional unit shown after the value, for example mm.' } },
+    {
+      name: 'unit',
+      type: 'text',
+      admin: { description: 'Optional unit shown after the value, for example mm.' },
+    },
     {
       name: 'options',
       type: 'array',

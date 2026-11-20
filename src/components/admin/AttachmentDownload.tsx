@@ -8,7 +8,10 @@ export function AttachmentDownload() {
   if (!id) return null
   return (
     <p>
-      <a href={`/api/rfq-attachments/${id}/download`} className="btn btn--style-primary btn--size-small">
+      <a
+        href={`/api/rfq-attachments/${id}/download`}
+        className="btn btn--style-primary btn--size-small"
+      >
         Download file
       </a>{' '}
       <small>Available only when the virus-scan check has passed.</small>

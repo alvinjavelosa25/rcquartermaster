@@ -66,7 +66,10 @@ export const Documents: CollectionConfig = {
         {
           name: 'expiryDate',
           type: 'date',
-          admin: { date: { pickerAppearance: 'dayOnly' }, description: 'Certificates: shown to buyers.' },
+          admin: {
+            date: { pickerAppearance: 'dayOnly' },
+            description: 'Certificates: shown to buyers.',
+          },
         },
       ],
     },
@@ -74,7 +77,10 @@ export const Documents: CollectionConfig = {
       name: 'accessibleAlternative',
       type: 'checkbox',
       defaultValue: false,
-      admin: { description: 'Tick if this PDF is tagged/accessible or an accessible alternative is available on request.' },
+      admin: {
+        description:
+          'Tick if this PDF is tagged/accessible or an accessible alternative is available on request.',
+      },
     },
   ],
 }

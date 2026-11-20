@@ -25,12 +25,19 @@ export async function SiteFooter() {
           <address className="mt-2 text-sm not-italic">
             {s.phone && (
               <p>
-                <a href={`tel:${s.phone.replace(/[^\d+]/g, '')}`} className="text-white">{s.phone}</a>
+                <a
+                  href={`tel:${s.phone.replace(/[^\d+]/g, '')}`}
+                  className="inline-block py-1 text-white"
+                >
+                  {s.phone}
+                </a>
               </p>
             )}
             {s.email && (
               <p>
-                <a href={`mailto:${s.email}`} className="text-white">{s.email}</a>
+                <a href={`mailto:${s.email}`} className="inline-block py-1 text-white">
+                  {s.email}
+                </a>
               </p>
             )}
             {s.addressLines.map((l) => (
@@ -39,18 +46,44 @@ export async function SiteFooter() {
             {s.hours && <p className="mt-2">{s.hours}</p>}
           </address>
           <p className="mt-3 text-sm">
-            <Link href="/contact" className="text-white">Need help with a request?</Link>
+            <Link href="/contact" className="inline-block py-1 text-white">
+              Need help with a request?
+            </Link>
           </p>
         </div>
         <nav aria-label="Footer">
           <h2 className="text-base font-bold">Site</h2>
           <ul className="mt-2 space-y-1 text-sm">
-            <li><Link href="/categories" className="text-white">Products</Link></li>
-            <li><Link href="/rfq" className="text-white">Request for quote</Link></li>
-            <li><Link href="/services" className="text-white">Services</Link></li>
-            <li><Link href="/about" className="text-white">About and capabilities</Link></li>
-            <li><Link href="/privacy" className="text-white">Privacy policy</Link></li>
-            <li><Link href="/accessibility" className="text-white">Accessibility statement</Link></li>
+            <li>
+              <Link href="/categories" className="inline-block py-1 text-white">
+                Products
+              </Link>
+            </li>
+            <li>
+              <Link href="/rfq" className="inline-block py-1 text-white">
+                Request for quote
+              </Link>
+            </li>
+            <li>
+              <Link href="/services" className="inline-block py-1 text-white">
+                Services
+              </Link>
+            </li>
+            <li>
+              <Link href="/about" className="inline-block py-1 text-white">
+                About and capabilities
+              </Link>
+            </li>
+            <li>
+              <Link href="/privacy" className="inline-block py-1 text-white">
+                Privacy policy
+              </Link>
+            </li>
+            <li>
+              <Link href="/accessibility" className="inline-block py-1 text-white">
+                Accessibility statement
+              </Link>
+            </li>
           </ul>
         </nav>
       </div>

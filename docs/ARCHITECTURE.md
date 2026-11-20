@@ -404,7 +404,7 @@ HSTS (1 year, includeSubDomains, preload after verification), `X-Content-Type-Op
 Turnstile (server verified, token single-use), per-IP-hash and per-email rate limits (proposed: RFQ submit 5/hour/IP and 20/day/IP; 10/day/email; upload-url 30/hour/IP), honeypot field as a cheap extra, Origin/Fetch-Metadata checks on POST routes, request size caps, Vercel WAF rule for burst traffic, uniform error responses.
 
 ### 7.4 Documents visibility
-Public documents live in a public bucket under unguessable keys. When a document is unpublished, a hook moves the object to a non-public prefix and clears its public URL, so unpublish is effective at the storage level and not only in the UI (FR-007). Needs client confirmation of the approval model (Q-09).
+Implemented differently from the first draft: neither bucket is public. Images and documents are served through Payload's file route (`/api/media/file/...`, `/api/documents/file/...`), which applies the collection's `read` access rule on every request. A document whose status is not Published therefore returns 403 to anyone but staff, immediately, with no object moving required (FR-007). The trade-off is that each file request passes through a function; add a CDN cache for published files if traffic requires it. Needs client confirmation of the approval model (Q-09).
 
 ### 7.5 Secrets and environments
 All secrets in Vercel environment variables (Production, Preview, Development scopes). `.env.example` lists every variable with no values. `src/env.ts` validates on boot. GitHub push protection/secret scanning enabled. Preview deployments use test Turnstile keys, a Neon branch database and a sandbox email (Resend restricted recipient).
@@ -460,3 +460,29 @@ All secrets in Vercel environment variables (Production, Preview, Development sc
 | Virus-scan provider | Real scanning | Hook with `skipped` status |
 | React Email | Email templates | Plain TS templates (default) |
 | `eslint-plugin-jsx-a11y` | Lint a11y | Included in `eslint-config-next` partly |
+
+## 12. Implementation notes (Stage 2)
+
+Where the scaffold differs from, or refines, the design above.
+
+| Area | Decision in code | Why |
+|---|---|---|
+| Versions | Next.js 16 with Payload 3.94 (pinned together), React 19, Tailwind 4, Zod 4 | Latest combination supported by Payload at build time. Upgrade Next and Payload as a pair |
+| Search | `search_documents` is a hidden Payload collection; the generated weighted `tsv` column and GIN indexes are added through Payload's `afterSchemaInit` hook (`src/lib/search/schema.ts`) so migrations include them. Trigram matching runs **only as a fallback** when exact full-text/SKU matching finds nothing, so it never adds noise | Keeps schema and migrations in one system; better precision |
+| Search cards | The index stores card data (name, slug, summary, first image URL and alt, category) | Listings need no joins and the document shape can move to Meilisearch/Algolia unchanged. Changing a media file's alt text requires re-saving the product or `npm run reindex` |
+| Attachments | Presigned PUT signs the content type only. R2 does not support size conditions on presigned PUT, so size, type and magic bytes are enforced by the server at submit; abandoned uploads are removed by an R2 lifecycle rule plus the cleanup cron | Platform limitation, documented in DEPLOYMENT.md |
+| Local storage driver | `STORAGE_DRIVER=local` (development and tests only) emulates presigned URLs with HMAC-signed `/api/dev-storage` URLs; refused when `SITE_ENV=production` | Lets the full attachment pipeline run in CI without cloud credentials |
+| RFQ idempotency | The route checks the idempotency key before Turnstile verification, because the token is single-use and a retry would otherwise fail | Safe: the key is an unguessable UUID created by the buyer's browser |
+| Honeypot | A filled honeypot returns a fake success without saving | Cheap extra bot filter |
+| Roles | Single `role` field; first user created becomes Admin; `lastLoginAt` from the data model is not implemented | Simplicity |
+| Pages | Rich text pages without custom blocks (About, Services, Privacy, Accessibility); home page copy lives in Site settings | Blocks can be added later; less to maintain |
+| Category description | Plain textarea, not rich text | Short blurbs only |
+| Draft preview | `/preview/products/[slug]` renders unpublished content for signed-in Admin/Catalogue staff; the product page itself stays statically cached and revalidated by tag | Avoids Next.js draft mode forcing dynamic rendering of public pages |
+| Caching | Catalogue data is cached with `unstable_cache` under one tag; Payload hooks call `revalidateTag` on any catalogue change. Search, RFQ and category listing pages (which read query strings) render per request using cached data | Publish/unpublish is visible immediately; verified by e2e within the 60 s target |
+| CSP | Baseline policy in `next.config.mjs` still permits inline scripts (`'unsafe-inline'`), because nonces force dynamic rendering. Everything else (frame-ancestors, object-src, connect-src allow-list) is strict | Decision F-11/H-04 to revisit with Core Web Vitals data before launch |
+| Rate limiting | Postgres counters (atomic upsert) per hashed IP and per email; Vercel WAF rules recommended as the outer layer | No Redis dependency |
+| Email | Sent after the response through `after()`, recorded per recipient, retried by cron (max 5) | RFQ is never lost because email failed |
+| CLI scripts | The Payload CLI strips `--flags`, so scripts take bare words or env vars | Observed behaviour; documented in README |
+| Redirects | `src/config/redirects.json` (not TypeScript) so `next.config.mjs` and tests share it | Simple, reviewable |
+| Backups | `.github/workflows/backup.yml` (encrypted `pg_dump` to a separate bucket) plus Neon PITR | Section 10 |
+| Not yet built | Admin MFA, a concrete virus-scan provider, admin-managed redirects, search suggestions, contact form, related-products editing UI beyond the relationship field | See BACKLOG.md post-launch list and OPEN_QUESTIONS.md |

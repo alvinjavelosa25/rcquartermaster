@@ -3,18 +3,24 @@ import { notFound } from 'next/navigation'
 import { Breadcrumbs, breadcrumbJsonLd } from '@/components/Breadcrumbs'
 import { JsonLd } from '@/components/JsonLd'
 import { Listing } from '@/components/Listing'
-import { breadcrumbFor, childrenOf, getCategories, getCategoryListing, searchCatalogue } from '@/lib/data/catalogue'
-import { buildListingQuery, parseListingParams, toSearchParams, type RawSearchParams } from '@/lib/search/params'
+import {
+  breadcrumbFor,
+  childrenOf,
+  getCategories,
+  getCategoryListing,
+  searchCatalogue,
+} from '@/lib/data/catalogue'
+import {
+  buildListingQuery,
+  parseListingParams,
+  toSearchParams,
+  type RawSearchParams,
+} from '@/lib/search/params'
 import { siteUrl } from '@/env'
 
 type Props = {
   params: Promise<{ path: string[] }>
   searchParams: Promise<RawSearchParams>
-}
-
-export const dynamicParams = true
-export async function generateStaticParams() {
-  return []
 }
 
 async function resolve(path: string[]) {
@@ -54,7 +60,10 @@ export default async function CategoryPage({ params, searchParams }: Props) {
   const crumbs = [
     { name: 'Home', href: '/' },
     { name: 'Categories', href: '/categories' },
-    ...breadcrumbFor(all, node).map((c) => ({ name: c.name, href: c.id === node.id ? undefined : `/categories/${c.path}` })),
+    ...breadcrumbFor(all, node).map((c) => ({
+      name: c.name,
+      href: c.id === node.id ? undefined : `/categories/${c.path}`,
+    })),
   ]
   const base = `/categories/${node.path}`
 
@@ -70,7 +79,11 @@ export default async function CategoryPage({ params, searchParams }: Props) {
           basePath={base}
           narrowHeading="Subcategories"
           narrowLinks={subs
-            .map((s) => ({ name: s.name, href: `/categories/${s.path}${buildListingQuery({ q: parsed.q })}`, count: counts.get(s.id) ?? 0 }))
+            .map((s) => ({
+              name: s.name,
+              href: `/categories/${s.path}${buildListingQuery({ q: parsed.q })}`,
+              count: counts.get(s.id) ?? 0,
+            }))
             .filter((l) => l.count > 0)}
         />
       </div>

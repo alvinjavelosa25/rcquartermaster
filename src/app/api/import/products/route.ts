@@ -44,6 +44,11 @@ export async function POST(request: Request) {
     publish,
     maxRows: MAX_ADMIN_IMPORT_ROWS,
   })
-  console.info('[import] products', { by: user.id, dryRun, total: report.total, failed: report.failed })
+  console.info('[import] products', {
+    by: user.id,
+    dryRun,
+    total: report.total,
+    failed: report.failed,
+  })
   return json(report)
 }

@@ -24,11 +24,15 @@ export async function PUT(request: Request) {
   const exp = Number(url.searchParams.get('exp'))
   const sig = url.searchParams.get('sig') ?? ''
   const contentType = request.headers.get('content-type') ?? ''
-  if (!isValidStorageKey(key) || !verifyLocalSignature(env.PAYLOAD_SECRET, 'upload', key, exp, sig, contentType)) {
+  if (
+    !isValidStorageKey(key) ||
+    !verifyLocalSignature(env.PAYLOAD_SECRET, 'upload', key, exp, sig, contentType)
+  ) {
     return json({ error: 'Forbidden' }, 403)
   }
   const max = (env.RFQ_MAX_FILE_MB + 1) * 1024 * 1024
-  if (Number(request.headers.get('content-length') ?? 0) > max) return json({ error: 'Too large' }, 413)
+  if (Number(request.headers.get('content-length') ?? 0) > max)
+    return json({ error: 'Too large' }, 413)
   const body = new Uint8Array(await request.arrayBuffer())
   if (body.length > max) return json({ error: 'Too large' }, 413)
   await new LocalStorage(env.PAYLOAD_SECRET).writeBytes(key, body)
@@ -43,7 +47,10 @@ export async function GET(request: Request) {
   const exp = Number(url.searchParams.get('exp'))
   const sig = url.searchParams.get('sig') ?? ''
   const filename = url.searchParams.get('filename') ?? 'file'
-  if (!isValidStorageKey(key) || !verifyLocalSignature(env.PAYLOAD_SECRET, 'download', key, exp, sig, filename)) {
+  if (
+    !isValidStorageKey(key) ||
+    !verifyLocalSignature(env.PAYLOAD_SECRET, 'download', key, exp, sig, filename)
+  ) {
     return json({ error: 'Forbidden' }, 403)
   }
   try {

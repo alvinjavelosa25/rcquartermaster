@@ -3,7 +3,12 @@ import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { Listing } from '@/components/Listing'
 import { buttonClass, inputClass } from '@/components/ui'
 import { childrenOf, getCategories, searchCatalogue } from '@/lib/data/catalogue'
-import { buildListingQuery, parseListingParams, toSearchParams, type RawSearchParams } from '@/lib/search/params'
+import {
+  buildListingQuery,
+  parseListingParams,
+  toSearchParams,
+  type RawSearchParams,
+} from '@/lib/search/params'
 import { SearchTracker } from '@/components/SearchTracker'
 
 type Props = { searchParams: Promise<RawSearchParams> }
@@ -37,14 +42,30 @@ export default async function SearchPage({ searchParams }: Props) {
   return (
     <>
       <Breadcrumbs items={[{ name: 'Home', href: '/' }, { name: 'Search' }]} />
-      <h1 className="mt-4 text-3xl font-bold">{parsed.q ? `Search results for “${parsed.q}”` : 'Search products'}</h1>
+      <h1 className="mt-4 text-3xl font-bold">
+        {parsed.q ? `Search results for “${parsed.q}”` : 'Search products'}
+      </h1>
       {current && <p className="mt-1">Within category: {current.name}</p>}
-      <form action="/search" method="get" role="search" className="mt-6 flex max-w-2xl flex-wrap items-end gap-3">
+      <form
+        action="/search"
+        method="get"
+        role="search"
+        aria-label="Search the catalogue"
+        className="mt-6 flex max-w-2xl flex-wrap items-end gap-3"
+      >
         <div className="min-w-0 flex-1">
           <label htmlFor="search-page-q" className="block font-semibold">
             Keyword or SKU
           </label>
-          <input id="search-page-q" name="q" type="search" defaultValue={parsed.q} maxLength={200} autoComplete="off" className={`${inputClass} mt-1`} />
+          <input
+            id="search-page-q"
+            name="q"
+            type="search"
+            defaultValue={parsed.q}
+            maxLength={200}
+            autoComplete="off"
+            className={`${inputClass} mt-1`}
+          />
         </div>
         {current && <input type="hidden" name="category" value={current.path} />}
         <button type="submit" className={buttonClass('primary')}>

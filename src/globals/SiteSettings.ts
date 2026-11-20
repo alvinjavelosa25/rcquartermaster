@@ -26,10 +26,24 @@ export const SiteSettings: GlobalConfig = {
         {
           label: 'Company',
           fields: [
-            { name: 'companyName', type: 'text', required: true, defaultValue: 'RC Quartermaster LLC' },
+            {
+              name: 'companyName',
+              type: 'text',
+              required: true,
+              defaultValue: 'RC Quartermaster LLC',
+            },
             { name: 'legalName', type: 'text' },
-            { name: 'tagline', type: 'text', defaultValue: 'Facility supplies, equipment and services for government and healthcare buyers.' },
-            { name: 'homeHeadline', type: 'text', defaultValue: 'Find approved supplies. Request a quote.' },
+            {
+              name: 'tagline',
+              type: 'text',
+              defaultValue:
+                'Facility supplies, equipment and services for government and healthcare buyers.',
+            },
+            {
+              name: 'homeHeadline',
+              type: 'text',
+              defaultValue: 'Find approved supplies. Request a quote.',
+            },
             {
               name: 'homeSubheadline',
               type: 'textarea',
@@ -44,8 +58,16 @@ export const SiteSettings: GlobalConfig = {
             { name: 'phone', type: 'text' },
             { name: 'email', type: 'email' },
             { name: 'addressLines', type: 'textarea', admin: { description: 'One line per row.' } },
-            { name: 'hours', type: 'text', defaultValue: 'Monday to Friday, 8:00 am to 5:00 pm Eastern' },
-            { name: 'responseTime', type: 'text', defaultValue: 'We respond to requests within 1 business day.' },
+            {
+              name: 'hours',
+              type: 'text',
+              defaultValue: 'Monday to Friday, 8:00 am to 5:00 pm Eastern',
+            },
+            {
+              name: 'responseTime',
+              type: 'text',
+              defaultValue: 'We respond to requests within 1 business day.',
+            },
           ],
         },
         {
@@ -61,9 +83,21 @@ export const SiteSettings: GlobalConfig = {
                 {
                   type: 'row',
                   fields: [
-                    { name: 'label', type: 'text', required: true, admin: { description: 'For example UEI, CAGE code, NAICS.' } },
+                    {
+                      name: 'label',
+                      type: 'text',
+                      required: true,
+                      admin: { description: 'For example UEI, CAGE code, NAICS.' },
+                    },
                     { name: 'value', type: 'text', required: true },
-                    { name: 'verified', type: 'checkbox', defaultValue: false, admin: { description: 'Confirmed by the client. Unverified items are hidden.' } },
+                    {
+                      name: 'verified',
+                      type: 'checkbox',
+                      defaultValue: false,
+                      admin: {
+                        description: 'Confirmed by the client. Unverified items are hidden.',
+                      },
+                    },
                   ],
                 },
               ],
@@ -97,7 +131,10 @@ export const SiteSettings: GlobalConfig = {
               required: true,
               defaultValue: 730,
               min: 30,
-              admin: { description: 'RFQs and their attachments are deleted this many days after submission.' },
+              admin: {
+                description:
+                  'RFQs and their attachments are deleted this many days after submission.',
+              },
             },
           ],
         },

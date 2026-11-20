@@ -39,7 +39,11 @@ export function ProductCsvTools() {
     setMessage('')
     setReport(null)
     try {
-      const res = await fetch('/api/import/products', { method: 'POST', body: data, credentials: 'same-origin' })
+      const res = await fetch('/api/import/products', {
+        method: 'POST',
+        body: data,
+        credentials: 'same-origin',
+      })
       const json = (await res.json()) as Report & { error?: string }
       if (!res.ok) setMessage(json.error ?? 'Import failed.')
       else setReport(json)
@@ -65,18 +69,22 @@ export function ProductCsvTools() {
         </p>
         <form onSubmit={onSubmit} style={{ display: 'grid', gap: 8 }}>
           <label>
-            CSV file{' '}
-            <input type="file" name="file" accept=".csv,text/csv" />
+            CSV file <input type="file" name="file" accept=".csv,text/csv" />
           </label>
           <label>
-            <input type="checkbox" name="dryRun" value="true" defaultChecked /> Dry run (validate only, change
-            nothing)
+            <input type="checkbox" name="dryRun" value="true" defaultChecked /> Dry run (validate
+            only, change nothing)
           </label>
           <label>
-            <input type="checkbox" name="publish" value="true" /> Publish imported products (default is Draft)
+            <input type="checkbox" name="publish" value="true" /> Publish imported products (default
+            is Draft)
           </label>
           <div>
-            <button type="submit" disabled={busy} className="btn btn--style-primary btn--size-small">
+            <button
+              type="submit"
+              disabled={busy}
+              className="btn btn--style-primary btn--size-small"
+            >
               {busy ? 'Working…' : 'Run import'}
             </button>
           </div>
@@ -86,9 +94,9 @@ export function ProductCsvTools() {
           {report && (
             <div>
               <p>
-                <strong>{report.dryRun ? 'Dry run result' : 'Import result'}:</strong> {report.total} rows,{' '}
-                {report.created} to create/created, {report.updated} to update/updated, {report.skipped} skipped,{' '}
-                {report.failed} failed.
+                <strong>{report.dryRun ? 'Dry run result' : 'Import result'}:</strong>{' '}
+                {report.total} rows, {report.created} to create/created, {report.updated} to
+                update/updated, {report.skipped} skipped, {report.failed} failed.
               </p>
               {report.fatal && <p style={{ color: 'var(--theme-error-500)' }}>{report.fatal}</p>}
               {report.errors.length > 0 && (
