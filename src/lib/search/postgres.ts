@@ -19,6 +19,9 @@ export const normalizeQuery = (q: string | undefined): string =>
 
 export const escapeLike = (s: string): string => s.replace(/[\\%_]/g, (c) => `\\${c}`)
 
+/** Longer queries tolerate more typos; short ones must be close matches to avoid noise. */
+export const trigramThreshold = (q: string): number => (q.length >= 6 ? 0.3 : 0.5)
+
 type Row = Record<string, unknown>
 
 /**
@@ -62,7 +65,7 @@ export class PostgresSearchService implements SearchService {
         sql`d.sku ILIKE ${prefix}`,
       ]
       if (trigram && q.length >= 4) {
-        alternatives.push(sql`word_similarity(${q}, d.name) >= 0.4`)
+        alternatives.push(sql`word_similarity(${q}, d.name) >= ${trigramThreshold(q)}`)
         alternatives.push(sql`similarity(d.sku, ${q}) >= 0.5`)
       }
       parts.push(sql`(${sql.join(alternatives, sql` OR `)})`)

@@ -58,7 +58,6 @@ export type ValidationResult = { ok: true; ext: string; uploadType: string } | {
 export function sanitizeFilename(name: string): string {
   const base = name.replace(/\\/g, '/').split('/').pop() ?? ''
   const cleaned = base
-    // eslint-disable-next-line no-control-regex
     .replace(/[\u0000-\u001f\u007f\u200e\u200f\u202a-\u202e\u2066-\u2069]/g, '')
     .replace(/\s+/g, ' ')
     .replace(/^[.\s]+/, '')
