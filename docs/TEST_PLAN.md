@@ -223,11 +223,11 @@ Implemented and run in CI (`npm test`, `npm run test:e2e`):
 
 | Area | Where | Covers |
 |---|---|---|
-| Unit | `tests/unit/*.test.ts` | UT-001, 002 (path helpers), 006 (role helpers via e2e), 010-016 (query hygiene, params, ancestry), 020-026, 030-035, 040-044 (helpers), 050 (retention via cron route), 051-053, ATT-01..09 and magic bytes, SEC-01 headers/CSP, token contrast |
+| Unit | `tests/unit/*.test.ts` | UT-001, 002 (path helpers), 006 (role helpers via e2e), 010-016 (query hygiene, params, ancestry), 020-026, 030-035, 040-044 (helpers), 051-053, ATT-01..09 and magic bytes, SEC-01 headers/CSP, token contrast |
 | E2E browse/search | `tests/e2e/browse-search.spec.ts` | E2E-001..010, 054, UT-012 typo tolerance |
 | E2E RFQ | `tests/e2e/rfq.spec.ts` | E2E-020..031, 027, 028, ATT-01, 05, 06, 12, 21, SEC-08, 09 |
 | E2E admin/security | `tests/e2e/admin-security.spec.ts` | SEC-03, 04, 16, E2E-010, 040-044 (API driven), 041 lockout, S-04, M-01, M-06, M-07 |
 | Accessibility | `tests/e2e/accessibility.spec.ts` | axe (WCAG 2.0-2.2 A/AA + best practice) on all public pages and RFQ states, desktop and mobile; A11Y-01, 02, 03, 11 partly automated |
 | SEO/security | `tests/e2e/seo-security.spec.ts` | E2E-050, 051, FR-064..066, SEC-01, 02, 06, 07 |
 
-Not automated yet (manual or needs a service): ATT-10/11 (R2 presign conditions and expiry, test against a real bucket), ATT-14 (abandoned-upload cleanup, covered by the lifecycle rule and cron), ATT-16/17 (scanner provider required, interface and status gating are unit-testable with a fake), ATT-19/22/23/24 (against R2), PERF-01..09 (Lighthouse CI needs approval; use PageSpeed Insights and Chrome DevTools meanwhile), A11Y-04..10, 12..20 (manual audit in Milestone 4), SEC-13 (cookie flags in production), SEC-15, SEC-17..23, E2E-052/053 (needs populated redirect map and analytics provider).
+Not automated yet (manual or needs a service): UT-050 retention purge (needs a database integration test with back-dated records; the job is `runRetentionPurge` in `src/lib/jobs.ts`), ATT-10/11 (R2 presign conditions and expiry, test against a real bucket), ATT-14 (abandoned-upload cleanup, covered by the lifecycle rule and cron), ATT-16/17 (scanner provider required, interface and status gating are unit-testable with a fake), ATT-19/22/23/24 (against R2), PERF-01..09 (Lighthouse CI needs approval; use PageSpeed Insights and Chrome DevTools meanwhile), A11Y-04..10, 12..20 (manual audit in Milestone 4), SEC-13 (cookie flags in production), SEC-15, SEC-17..23, E2E-052/053 (needs populated redirect map and analytics provider).

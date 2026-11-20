@@ -142,7 +142,7 @@ test.describe('catalogue management', () => {
     const gloves = (
       await (
         await cat.get(
-          '/api/categories?where[path][equals]=personal-protective-equipment/gloves&depth=0',
+          '/api/categories?where[path][equals]=medical-surgical-supplies/exam-room-supplies&depth=0',
         )
       ).json()
     ).docs[0]
@@ -297,6 +297,25 @@ test.describe('operations endpoints', () => {
         await anon.get('/api/cron/email-retry', { headers: { authorization: 'Bearer wrong' } })
       ).status(),
     ).toBe(401)
+  })
+
+  test('scheduled jobs run with the secret and report counts', async ({ baseURL }) => {
+    test.skip(Boolean(process.env.E2E_BASE_URL), 'needs the e2e server secret')
+    const anon = await anonymous(baseURL!)
+    const headers = {
+      authorization: `Bearer ${process.env.E2E_CRON_SECRET ?? 'e2e-cron-secret-0123456789'}`,
+    }
+    const retry = await anon.get('/api/cron/email-retry', { headers })
+    expect(retry.status()).toBe(200)
+    expect(await retry.json()).toMatchObject({ retried: expect.any(Number) })
+    const retention = await anon.get('/api/cron/retention', { headers })
+    expect(await retention.json()).toMatchObject({ rfqsDeleted: 0, filesDeleted: 0 })
+    const cleanup = await anon.get('/api/cron/cleanup', { headers })
+    expect(await cleanup.json()).toMatchObject({
+      rateLimitRows: expect.any(Number),
+      quarantineFiles: expect.any(Number),
+    })
+    expect((await anon.get('/api/cron/unknown', { headers })).status()).toBe(404)
   })
 
   test('health check responds', async ({ baseURL }) => {

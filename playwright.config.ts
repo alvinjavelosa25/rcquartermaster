@@ -34,6 +34,7 @@ export default defineConfig({
           SITE_ENV: 'development',
           STORAGE_DRIVER: 'local',
           NEXT_PUBLIC_SITE_URL: baseURL,
+          CRON_SECRET: process.env.E2E_CRON_SECRET ?? 'e2e-cron-secret-0123456789',
           // Small limits so the rate-limit test is quick; every test uses its own client IP (see fixtures.ts).
           RFQ_RATE_LIMIT_PER_HOUR: '5',
           RFQ_RATE_LIMIT_PER_DAY: '50',
