@@ -1,0 +1,4 @@
+{
+  "_note": "Placeholder 301 redirect map. Populate from the URL audit (see docs/BACKLOG.md H-06). Each entry: { \"source\": \"/old-path\", \"destination\": \"/new-path\" }. Validated by tests/unit/redirects.test.ts.",
+  "redirects": []
+}
